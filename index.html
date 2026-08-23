@@ -12,10 +12,10 @@
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
   <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png" />
-  <!-- CDN：Three.js（async，不阻塞业务脚本） -->
+  <!-- CDN：Three.js（async） -->
   <style>
     /* =================================================================
-       恋学 v6.4 · 修复版
+       恋学 v6.5 · 修复版
        - 移除 Tailwind CDN（内联工具类替代）
        - Three.js 异步加载 + 自动降级
        - 所有事件绑定全防御（缺失元素只跳过该模块）
@@ -23,6 +23,7 @@
        - 首页只保留「开始学习 / 今日签到」
        - 大标题：内置励志/治愈/学习/热血四字成语，每次登录自动刷新
        - 今日一句：仅一行、不超卡片、无省略号（长句自动缩字号）
+       - 新增 Supabase 登录模块（可选增强，不影响未登录使用）
        ================================================================= */
     :root {
       --bg:#04070e; --bg-2:#0a0d16;
@@ -389,6 +390,7 @@
       <header class="topbar">
         <div><p class="eyebrow">DAILY QUOTE · 今日一句</p><h1 id="quote-text">先理解，再记忆；先框架，再细节。</h1><p id="date-label" class="date-label"></p></div>
         <button id="quote-next" class="icon-btn quote-refresh" type="button" aria-label="换一句语录" title="换一句语录">↻</button>
+        <div id="auth-area" style="flex:none;display:flex;align-items:center;gap:8px"></div>
       </header>
 
       <section id="home-view" class="workspace-section home-view">
@@ -538,8 +540,23 @@
         </div>
       </section>
 
-      <p class="footer-note">恋学 · 学习空间 — 数据仅保存在当前浏览器 · 每日一句在线获取（断网自动回退）· 学习打卡已融入今日签到 · 可接入 AI 接口</p>
+      <p class="footer-note">恋学 · 学习空间 — 数据仅保存在当前浏览器 · 每日一句在线获取（断网自动回退）· 学习打卡已融入今日签到 · 可接入 AI 接口 · 可选登录（Supabase）</p>
     </main>
+  </div>
+
+  <!-- ======= 登录弹窗（可选增强） ======= -->
+  <div id="auth-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <form id="auth-form" class="modal-card">
+      <div class="modal-head"><h2 id="auth-title" class="modal-title">登录</h2><button id="auth-close" type="button" class="icon-btn" aria-label="关闭">×</button></div>
+      <div class="field" style="margin-bottom:12px"><label for="auth-email">邮箱</label><input id="auth-email" class="input" type="email" required autocomplete="email" placeholder="you@example.com" /></div>
+      <div class="field" style="margin-bottom:12px"><label for="auth-password">密码</label><input id="auth-password" class="input" type="password" required minlength="6" autocomplete="current-password" placeholder="至少 6 位" /></div>
+      <p id="auth-error" class="panel-copy" style="margin:10px 0 0;display:none"></p>
+      <div class="modal-actions">
+        <button id="auth-switch" type="button" class="btn btn-quiet">没有账号？去注册</button>
+        <button id="auth-cancel" type="button" class="btn btn-quiet">取消</button>
+        <button id="auth-submit" type="submit" class="btn btn-primary">登录</button>
+      </div>
+    </form>
   </div>
 
   <!-- ======= 今日签到弹窗 ======= -->
@@ -568,9 +585,11 @@
 
   <!-- CDN：Three.js（async，绝不阻塞业务脚本） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" async></script>
+  <!-- CDN：Supabase SDK（登录模块依赖） -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     /* =================================================================
-       [背景系统] Three.js 深蓝流体 — v6.4：就绪才启动，失败自动降级
+       [背景系统] Three.js 深蓝流体 — v6.5：就绪才启动，失败自动降级
        ================================================================= */
     (function () {
       var KEY = 'focus-list-bg-settings-v1';
@@ -711,12 +730,12 @@
   </script>
   <script>
     /* =================================================================
-       [应用主逻辑] v6.4 全防御版
-       - 事件绑定：元素存在才绑，缺失则跳过该模块并提示
+       [应用主逻辑] v6.5
+       - 事件绑定全防御；存储写入安全包裹
        - 首页按钮：只保留「开始学习 / 今日签到」
-       - 证书备考：按 CERT_URLS 映射表显示「学习网站」链接
        - 大标题：内置成语库，每次登录自动刷新
        - 今日一句：仅一行、不超卡片、无省略号（自动缩字号）
+       - 新增 Supabase 登录模块（可选增强，未登录不影响使用）
        ================================================================= */
     (() => {
       const $ = (id) => { const el = document.getElementById(id); if (!el) console.warn('[恋学] 页面缺少元素 #' + id); return el; };
@@ -729,6 +748,108 @@
       function safeSet(key, val) { try { localStorage.setItem(key, val); } catch (e) { console.warn('[恋学] 存储写入失败，数据仅保留在内存', key); } }
       /* 证书学习网站映射（不受 localStorage 旧数据影响） */
       const CERT_URLS = { cet4:'https://www.ixuecheng.cn/home', cet6:'https://www.ixuecheng.cn/home', ncre2:'https://www.xiaoheiketang.com/personal/myCourse', 'accounting-junior':'https://www.zlketang.com/personal/index.html?name=1' };
+      /* ===== Supabase 登录模块（可选增强） ===== */
+      const SUPABASE_URL = 'https://haqpfmfcqkgibipzqdxh.supabase.co';
+      const SUPABASE_ANON_KEY = 'sb_publishable_Zl7mNHnNrXl2Y_rXQfxL8A_J2bIZpQE';
+      let supabaseClient = null;
+      let authMode = 'login';            // 'login' | 'signup'
+      let authUser = null;               // 当前登录用户
+      function ensureSupabase() {
+        if (supabaseClient) return supabaseClient;
+        if (!window.supabase || !window.supabase.createClient) return null;
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        });
+        return supabaseClient;
+      }
+      function renderAuthArea() {
+        const area = $('auth-area');
+        if (!area) return;
+        if (!ensureSupabase()) { area.innerHTML = ''; return; }
+        if (authUser) {
+          const email = authUser.email || '已登录';
+          area.innerHTML = `<span class="pill" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeHtml(email)}">${escapeHtml(email)}</span><button id="auth-logout" type="button" class="btn glass-soft" style="min-height:36px;padding:0 12px;font-size:12px">退出</button>`;
+        } else {
+          area.innerHTML = `<button id="auth-open" type="button" class="btn glass-soft" style="min-height:36px;padding:0 12px;font-size:12px">登录</button>`;
+        }
+      }
+      function openAuth() {
+        const modal = $('auth-modal');
+        if (!modal || !ensureSupabase()) { console.warn('[恋学] Supabase 不可用，登录不可用'); return; }
+        authMode = 'login';
+        if ($('auth-title')) $('auth-title').textContent = '登录';
+        if ($('auth-switch')) $('auth-switch').textContent = '没有账号？去注册';
+        if ($('auth-submit')) $('auth-submit').textContent = '登录';
+        const errEl = $('auth-error'); if (errEl) { errEl.style.display = 'none'; errEl.style.color = 'var(--danger)'; }
+        const pw = $('auth-password'); if (pw) pw.autocomplete = 'current-password';
+        modal.classList.remove('hidden'); modal.classList.remove('closing');
+        const e = $('auth-email'); if (e) e.focus();
+      }
+      function closeAuth() {
+        const modal = $('auth-modal');
+        if (!modal || modal.classList.contains('hidden')) return;
+        modal.classList.add('closing');
+        setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('closing'); }, 200);
+      }
+      function switchAuthMode() {
+        authMode = authMode === 'login' ? 'signup' : 'login';
+        if ($('auth-title')) $('auth-title').textContent = authMode === 'login' ? '登录' : '注册新账号';
+        if ($('auth-switch')) $('auth-switch').textContent = authMode === 'login' ? '没有账号？去注册' : '已有账号？去登录';
+        if ($('auth-submit')) $('auth-submit').textContent = authMode === 'login' ? '登录' : '注册并登录';
+        if ($('auth-password')) $('auth-password').autocomplete = authMode === 'login' ? 'current-password' : 'new-password';
+        const errEl = $('auth-error'); if (errEl) { errEl.style.display = 'none'; errEl.style.color = 'var(--danger)'; }
+      }
+      async function handleAuthSubmit(event) {
+        event.preventDefault();
+        const sb = ensureSupabase();
+        if (!sb) return;
+        const email = $('auth-email') ? $('auth-email').value.trim() : '';
+        const password = $('auth-password') ? $('auth-password').value : '';
+        if (!email || !password) return;
+        const errEl = $('auth-error'); const submitBtn = $('auth-submit');
+        if (errEl) { errEl.style.display = 'none'; errEl.style.color = 'var(--danger)'; }
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '处理中…'; }
+        let res = null;
+        try {
+          if (authMode === 'login') res = await sb.auth.signInWithPassword({ email, password });
+          else res = await sb.auth.signUp({ email, password });
+        } catch (e) { res = { error: { message: e && e.message ? e.message : '网络异常，请稍后重试' } }; }
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = authMode === 'login' ? '登录' : '注册并登录'; }
+        if (res.error) {
+          if (errEl) { errEl.textContent = res.error.message || '操作失败，请稍后重试'; errEl.style.display = 'block'; }
+          return;
+        }
+        if (authMode === 'signup' && res.data && res.data.user && !res.data.session) {
+          /* 项目若开启了邮件确认：提示去邮箱验证 */
+          if (errEl) { errEl.textContent = '注册成功！请前往邮箱完成验证后再登录。'; errEl.style.color = 'var(--low)'; errEl.style.display = 'block'; }
+          authMode = 'login';
+          if ($('auth-title')) $('auth-title').textContent = '登录';
+          if ($('auth-switch')) $('auth-switch').textContent = '没有账号？去注册';
+          if ($('auth-submit')) $('auth-submit').textContent = '登录';
+          return;
+        }
+        closeAuth();
+        if (event.target && event.target.reset) event.target.reset();
+      }
+      async function handleLogout() {
+        const sb = ensureSupabase();
+        if (!sb) return;
+        await sb.auth.signOut();
+        authUser = null;
+        renderAuthArea();
+      }
+      function initAuth() {
+        const sb = ensureSupabase();
+        if (!sb) { console.warn('[恋学] Supabase SDK 未加载，登录模块不可用（不影响其他功能）'); renderAuthArea(); return; }
+        sb.auth.getSession().then(({ data }) => {
+          authUser = (data && data.session && data.session.user) || null;
+          renderAuthArea();
+        }).catch(() => { renderAuthArea(); });
+        sb.auth.onAuthStateChange((event, session) => {
+          authUser = (session && session.user) || null;
+          renderAuthArea();
+        });
+      }
       let tasks = loadTasks(); let certs; let checkins; let categories; let countdowns; let pomodoro; let pomodoroTimer = null; let pomodoroNotice = ''; let filter = 'all'; let tagFilter = 'all'; let search = ''; let activeView = 'tasks'; let draggedId = null; let calendarCursor = new Date(new Date().getFullYear(),new Date().getMonth(),1); let editingCategoryId = null; let editingCountdownId = null;
       let mindmaps = []; let mmCurrentId = null; let mmSelectedId = null; let mmApiEndpoint = ''; let mmEditing = false;
       const mmPalette = ['#c9ff00','#7effc6','#ff9ef5','#6ecbff','#ffbb6e','#a89bff','#ff8a8a'];
@@ -1203,6 +1324,17 @@
       /* ---- 语录 / 首页快捷跳转 ---- */
       on('quote-next','click', nextQuote); setInterval(nextQuote,18000);
       document.querySelectorAll('.home-jump').forEach((button) => button.addEventListener('click', () => { setView(button.dataset.target); }));
+      /* ---- 登录模块绑定（Supabase） ---- */
+      on('auth-close','click', closeAuth);
+      on('auth-cancel','click', closeAuth);
+      on('auth-switch','click', switchAuthMode);
+      on('auth-form','submit', handleAuthSubmit);
+      on('auth-modal','click', (event) => { if (event.target.id === 'auth-modal') closeAuth(); });
+      const authArea = $('auth-area');
+      if (authArea) authArea.addEventListener('click', (event) => {
+        if (event.target.closest('#auth-open')) openAuth();
+        if (event.target.closest('#auth-logout')) handleLogout();
+      });
       /* ---- 背景设置面板 ---- */
       function openBgSettings() { const panel = $('bg-settings-panel'); if (!panel) return; panel.classList.remove('hidden'); if ($('fluid-intensity')) $('fluid-intensity').value = bgSettings.intensity; if ($('flow-speed')) $('flow-speed').value = bgSettings.speed; if ($('scanlines-toggle')) $('scanlines-toggle').checked = bgSettings.scan; if ($('simple-mode-toggle')) $('simple-mode-toggle').checked = bgSettings.simple; }
       function closeBgSettings() { const panel = $('bg-settings-panel'); if (panel) panel.classList.add('hidden'); }
@@ -1213,6 +1345,7 @@
       on('scanlines-toggle','change', (e) => { bgSettings.scan = e.target.checked; saveBgSettings(); });
       on('simple-mode-toggle','change', (e) => { bgSettings.simple = e.target.checked; saveBgSettings(); });
       /* ---- 初始化（每个功能独立，单个失败不影响其他功能） ---- */
+      initAuth();
       nextHeroIdiom(); dateLabel(); nextQuote(); fitQuoteText();
       window.addEventListener('resize', fitQuoteText);
       [renderTasks, renderCerts, renderCalendar, renderCountdowns, renderPomodoro, renderMindMap, renderDual, renderMistakes, renderVocab, renderHomeSummary].forEach((fn) => {

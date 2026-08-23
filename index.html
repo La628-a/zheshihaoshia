@@ -12,13 +12,12 @@
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
   <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png" />
-  <!-- CDN：Three.js（async，不阻塞业务脚本） -->
   <style>
     /* =================================================================
-       恋学 v6.11 · 纯签到版
-       - 今日签到：仅签到（去掉打卡分类/打卡类型）
-       - 积分制（工作日 +1，周末双倍 +2）
-       - 成就系统（我的世界风格面板）
+       恋学 v6.12 · 纯签到强化版
+       - 仅可签到当天（不可补签/提前签）
+       - 成就 UI：MC 像素风（解锁发绿光 + 右上角金色发光弹窗自动消失）
+       - 成就面板 z 指数高于签到面板
        ================================================================= */
     :root {
       --bg:#04070e; --bg-2:#0a0d16;
@@ -274,20 +273,36 @@
     .integral-label { color:var(--faint); font-size:10.5px; font-weight:820; letter-spacing:.12em; }
     .integral-num { color:var(--accent); font-size:18px; font-weight:900; text-shadow:0 0 12px rgba(201,255,0,.3); }
 
-    /* ===== 成就 · 我的世界风格 ===== */
-    .mc-achv-card { width:min(680px,94vw); background:linear-gradient(rgba(30,34,28,.94),rgba(18,21,16,.96)); }
-    .mc-title { font-size:16px; font-weight:900; letter-spacing:.08em; color:#e8e0c8; text-transform:uppercase; border-bottom:2px solid #58a04d; padding-bottom:8px; }
-    .mc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
-    .mc-slot { display:flex; flex-direction:column; gap:6px; padding:10px; border-radius:8px; border:2px solid; background:rgba(0,0,0,.25); }
-    .mc-slot.unlocked { border-color:#58a04d; background:linear-gradient(rgba(88,160,77,.18),rgba(88,160,77,.06)); }
-    .mc-slot.locked { border-color:#3a3f37; }
-    .mc-slot-ico { font-size:26px; line-height:1; }
-    .mc-slot-name { font-size:12px; font-weight:900; color:#f2ead6; }
-    .mc-slot-desc { font-size:10.5px; color:#b9b19d; line-height:1.45; }
-    .mc-slot-state { font-size:10px; font-weight:850; letter-spacing:.08em; color:#8a9080; text-transform:uppercase; }
-    .mc-slot.unlocked .mc-slot-state { color:#7fd16a; }
-    .mc-progress { margin-top:12px; padding:10px 12px; border-radius:8px; background:rgba(0,0,0,.28); border:2px solid #3a3f37; color:#b9b19d; font-size:11.5px; }
+    /* ===== 成就 · 我的世界像素风 ===== */
+    #achv-modal { z-index:130; }
+    .mc-achv-card { width:min(680px,94vw); background:linear-gradient(rgba(34,38,30,.96),rgba(16,18,14,.98)); border:4px solid #1d201a; outline:2px solid #3a3f35; border-radius:0; }
+    .mc-title { font-size:16px; font-weight:900; letter-spacing:.1em; color:#ffd25a; text-shadow:2px 2px 0 #4a3a00; text-transform:uppercase; border-bottom:4px solid #3a3f35; padding:8px 10px; background:#22251d; margin:0; font-family:"Courier New",monospace; }
+    .mc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:12px;
+      background:repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px); }
+    .mc-slot { display:flex; flex-direction:column; gap:6px; padding:10px; text-align:left; border-radius:0; background:#2a2d25; border:0; box-shadow:inset 0 -4px 0 #10120e, inset 4px 4px 0 rgba(255,255,255,.05); }
+    .mc-slot.locked { border:2px solid #4a4e3f; filter:grayscale(1); }
+    .mc-slot.unlocked { border:2px solid #55ff55; box-shadow:inset 0 -4px 0 #123b12, inset 4px 4px 0 rgba(255,255,255,.08), 0 0 12px rgba(85,255,85,.3); }
+    .mc-slot-ico { font-size:28px; line-height:1; }
+    .mc-slot-name { font-size:12px; font-weight:900; color:#ffe9a8; text-shadow:1px 1px 0 #000; font-family:"Courier New",monospace; }
+    .mc-slot-desc { font-size:10px; color:#b9b19d; text-shadow:1px 1px 0 #000; font-family:"Courier New",monospace; }
+    .mc-slot-state { font-size:9px; font-weight:900; letter-spacing:.1em; color:#6a6f5a; font-family:"Courier New",monospace; }
+    .mc-slot.unlocked .mc-slot-state { color:#55ff55; }
+    .mc-progress { margin:0 12px 12px; padding:8px 10px; border:2px solid #3a3f35; background:#1c1f17; color:#c9c4a8; font-family:"Courier New",monospace; font-size:11px; border-radius:0; }
     @media (max-width:560px) { .mc-grid { grid-template-columns:repeat(2,1fr); } }
+
+    /* ===== 成就解锁 · 右上角弹窗（金色发光后自动消失） ===== */
+    #achv-toast-wrap { position:fixed; top:18px; right:18px; z-index:160; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+    .achv-toast { display:flex; align-items:center; gap:10px; padding:10px 14px; background:#22251d; border:3px solid #3a3f35; border-radius:0; color:#fff; box-shadow:4px 4px 0 #0b0c09; opacity:0; transform:translateX(30px); transition:.3s ease; }
+    .achv-toast.show { opacity:1; transform:none; }
+    .achv-toast-ico { font-size:28px; }
+    .achv-toast-title { font-size:13px; font-weight:900; color:#ffd25a; text-shadow:1px 1px 0 #000; font-family:"Courier New",monospace; }
+    .achv-toast-desc { font-size:10px; color:#b9b19d; font-family:"Courier New",monospace; }
+    .achv-toast.glow { animation:achv-glow 1s ease-in-out infinite; }
+    @keyframes achv-glow {
+      0%,100% { box-shadow:4px 4px 0 #0b0c09, 0 0 0 rgba(255,210,90,0); }
+      50% { box-shadow:4px 4px 0 #0b0c09, 0 0 16px 3px rgba(255,210,90,.7), 0 0 30px 6px rgba(255,210,90,.3); }
+    }
+    .achv-toast.out { opacity:0; transform:translateX(30px); transition:.4s ease; }
 
     .dual-stats { margin-top:4px; }
     .dual-list { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
@@ -353,6 +368,136 @@
     @media (min-width:640px) { .app-shell { padding:42px 28px 56px; } .panel { padding:24px; } }
     @media (max-width:700px) { .workspace-nav { justify-content:flex-start; } .stats { gap:8px; } .stat-card { padding:12px 10px; } .stat-value { font-size:22px; } .cert-grid,.countdown-grid { grid-template-columns:1fr; } .pomodoro-layout { grid-template-columns:1fr; } .home-quick,.home-badges { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (max-width:560px) { .topbar { margin-bottom:18px; } .workspace-nav { padding:0 10px; } .tab { font-size:10.5px; padding:7px 4px; letter-spacing:.1em; } .workspace-nav .tab:not(:first-child)::before { margin-right:6px; } .settings-fab { top:auto; bottom:16px; right:16px; } .settings-drawer { top:auto; bottom:72px; right:16px; } .toolbar { align-items:stretch; } .search-wrap { min-width:100%; } .toolbar > .btn { flex:1; } .field-grid { grid-template-columns:1fr; } .field.full { grid-column:auto; } .filter-row { align-items:stretch; } .filters { width:100%; } .filter-btn { flex:1; } .meta-actions { justify-content:space-between; } .task-card { padding-left:12px; } .task-actions { flex-direction:column; } .mini-btn { width:34px; height:30px; } .day-cell { min-height:40px; padding:5px 3px; } .panel-head { align-items:stretch; flex-direction:column; } .panel-head > .btn { align-self:flex-start; } .mm-selected-label { width:100%; text-align:left; } .mm-toolbar > .btn { flex:1 0 auto; } .dual-actions,.item-actions { margin-left:0; } }
+
+    /* ================================================================
+       双人空间 v2 · 可爱风浅蓝 + 三丽鸥风格气泡皮肤
+       （`#dual-view` id 特异性更高，自动覆盖旧样式）
+       ================================================================ */
+    #dual-view .glass.panel {
+      background: linear-gradient(180deg, #f0f9ff 0%, #e3f0fb 100%);
+      border: 2px solid #cfe8ff;
+      box-shadow: 0 14px 34px rgba(120, 180, 235, .22);
+    }
+    #dual-view .panel-kicker { color: #7fb1e8; }
+    #dual-view .panel-title { color: #4d7bbf; }
+    #dual-view .panel-copy { color: #7d95b8; }
+    #dual-view .btn-primary { background: #7cc4ff; color: #fff; box-shadow: 0 8px 20px rgba(124,196,255,.35); }
+    #dual-view .btn-primary:hover { background: #5fb4ff; }
+    #dual-view .btn.glass-soft { background: #fff; border-color: #d7e9fa; color: #5b8ec9; }
+    #dual-view .input { background: #fff; border-color: #d7e9fa; color: #4a6d99; }
+    #dual-view .input::placeholder { color: #9db8d8; }
+    #dual-view .field label { color: #6d93c4; }
+    #dual-view form.composer, #dual-view #dual-form { background: rgba(255,255,255,.9); border-color: #d7e9fa; }
+    #dual-view .mood-btn, #dual-view .sticker-btn { background: #fff; border-color: #d7e9fa; color: #4a6d99; }
+    #dual-view .mood-btn.selected, #dual-view .sticker-btn.selected { border-color: #7cc4ff; background: #eaf6ff; transform: scale(1.1); }
+    #dual-view .stat-card { background: #fff; border: 1px solid #d7e9fa; }
+    #dual-view .stat-label { color: #8fb2d8; }
+    #dual-view .stat-value { color: #4d7bbf; text-shadow: none; }
+    #dual-view .stat-sub { color: #9db8d8; }
+    #dual-view .empty-icon { background: #e3f2ff; color: #7cc4ff; }
+    #dual-view .empty-state p { color: #7d95b8; }
+
+    /* 皮肤切换条 */
+    .skin-selector { display:flex; align-items:center; gap:8px; margin:0 0 14px; padding:10px 12px; border-radius:18px; background:rgba(255,255,255,.75); border:1px solid #d7e9fa; }
+    .skin-selector-label { margin:0; color:#7d95b8; font-size:11px; font-weight:850; letter-spacing:.12em; }
+    .skin-btn { display:inline-flex; align-items:center; gap:5px; min-height:36px; padding:0 12px; border-radius:999px; background:#fff; border:2px solid #d7e9fa; color:#6d93c4; font-size:12.5px; font-weight:820; transition:.2s ease; }
+    .skin-btn:hover { transform:translateY(-1px); border-color:#9cc9f2; }
+    .skin-btn.active { border-color:#7cc4ff; background:#eaf6ff; color:#3f7fc4; box-shadow:0 0 0 3px rgba(124,196,255,.18); }
+    .skin-btn .skin-emoji { font-size:16px; }
+
+    /* ---------- 对话气泡 ---------- */
+    .dual-list { display:flex; flex-direction:column; gap:14px; margin-top:16px; }
+    .dual-row { display:flex; align-items:flex-end; gap:8px; animation:dual-in .45s cubic-bezier(.22,.9,.32,1) both; }
+    .dual-row.right { flex-direction:row-reverse; }
+    @keyframes dual-in { from { opacity:0; transform:translateY(12px) scale(.96); } to { opacity:1; transform:none; } }
+
+    .dual-avatar { flex:none; display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:#fff; border:2px solid #cfe8ff; font-size:19px; box-shadow:0 4px 12px rgba(120,180,235,.18); }
+
+    .dual-bubble { position:relative; max-width:min(78%, 520px); padding:11px 14px 13px; border-radius:20px; background:var(--bubble-bg,#fff); border:2px solid var(--bubble-border,#cfe8ff); box-shadow:0 6px 16px rgba(120,180,235,.16); }
+    .dual-bubble::after { content:""; position:absolute; bottom:18px; border:9px solid transparent; }
+    .dual-row.left .dual-bubble::after { left:-11px; border-right-color:var(--bubble-bg,#fff); }
+    .dual-row.right .dual-bubble::after { right:-11px; border-left-color:var(--bubble-bg,#fff); }
+
+    .dual-bubble-head { display:flex; align-items:center; gap:6px; margin-top:6px; }
+    .dual-bubble-who { font-size:10px; font-weight:850; letter-spacing:.08em; color:var(--who-color,#8fb2d8); }
+    .dual-bubble-time { font-size:10px; color:#aabfd8; }
+
+    .dual-bubble-text { margin:0; font-size:14px; line-height:1.65; overflow-wrap:anywhere; white-space:pre-wrap; color:#4a6d99; }
+    .dual-bubble .dual-emoji { font-size:19px; line-height:1; }
+    .dual-bubble-emoji-row { display:flex; gap:4px; margin-top:5px; }
+
+    .dual-bubble-media { margin-bottom:8px; border-radius:16px; overflow:hidden; background:#f2f8ff; border:1px solid #d7e9fa; }
+    .dual-bubble-media img { display:block; max-width:100%; max-height:280px; object-fit:cover; cursor:zoom-in; }
+
+    .dual-bubble-actions { display:flex; gap:2px; position:absolute; top:-10px; right:-6px; opacity:0; transition:.2s ease; }
+    .dual-row:hover .dual-bubble-actions { opacity:1; }
+    .dual-bubble-actions .mini-btn { width:26px; height:26px; border-radius:10px; font-size:12px; background:#fff; border:1px solid #d7e9fa; color:#7d95b8; }
+
+    /* 皮肤配色：大耳狗（玉桂狗）Cinnamoroll */
+    .skin-cinnamoroll .dual-bubble { --bubble-bg:#ffffff; --bubble-border:#cfe8ff; --who-color:#6fb3e8; }
+    .skin-cinnamoroll .dual-row.right .dual-bubble { --bubble-bg:#dff0ff; --bubble-border:#b8dcff; }
+    .skin-cinnamoroll .dual-avatar { background:#f4faff; border-color:#cfe8ff; }
+
+    /* 皮肤配色：库洛米 Kuromi */
+    .skin-kuromi .dual-bubble { --bubble-bg:#fff4f8; --bubble-border:#ffcddd; --who-color:#f2769b; }
+    .skin-kuromi .dual-row.right .dual-bubble { --bubble-bg:#ffd9e7; --bubble-border:#ffb7cf; }
+    .skin-kuromi .dual-avatar { background:#fff4f8; border-color:#ffcddd; }
+    .skin-kuromi .skin-btn.active { background:#fff0f5; border-color:#f2769b; box-shadow:0 0 0 3px rgba(242,118,155,.18); }
+
+    /* 皮肤配色：凯蒂猫 Hello Kitty */
+    .skin-kitty .dual-bubble { --bubble-bg:#fff7f9; --bubble-border:#ffd4df; --who-color:#f79bb4; }
+    .skin-kitty .dual-row.right .dual-bubble { --bubble-bg:#ffe3ea; --bubble-border:#ffc2d1; }
+    .skin-kitty .dual-avatar { background:#fff7f9; border-color:#ffd4df; }
+    .skin-kitty .skin-btn.active { background:#fff0f4; border-color:#f79bb4; box-shadow:0 0 0 3px rgba(247,155,180,.18); }
+
+    /* ================================================================
+       气泡角色装饰 v3 · 参考三丽鸥官网形象 CSS 手绘
+       ================================================================ */
+    .bubble-deco { position:absolute; z-index:1; pointer-events:none; }
+
+    /* 大耳狗（玉桂狗）：一对蓝色大垂耳 */
+    .skin-cinnamoroll .bubble-deco { top:-8px; left:11px; width:28px; height:20px; }
+    .skin-cinnamoroll .bubble-deco::before,
+    .skin-cinnamoroll .bubble-deco::after {
+      content:""; position:absolute; top:0; width:13px; height:20px;
+      background:linear-gradient(180deg, #e7f6ff 0%, #8ed0ff 100%);
+      border:1.5px solid #6cb8ef;
+    }
+    .skin-cinnamoroll .bubble-deco::before { left:0; transform:rotate(-8deg); border-radius:60% 35% 50% 40%; }
+    .skin-cinnamoroll .bubble-deco::after  { right:0; transform:rotate(8deg);  border-radius:35% 60% 40% 50%; }
+
+    /* 库洛米：粉色骷髅脸 + 两只恶魔角 */
+    .skin-kuromi .bubble-deco { top:-13px; left:12px; width:16px; height:14px;
+      background:#ffc7dd; border:1.5px solid #f26b9d; border-radius:50%;
+      background-image:
+        radial-gradient(circle at 5px 5px, #4b3040 1.5px, transparent 2px),
+        radial-gradient(circle at 11px 5px, #4b3040 1.5px, transparent 2px),
+        radial-gradient(circle at 8px 9px, #f26b9d 1px, transparent 1.6px); }
+    .skin-kuromi .bubble-deco::before,
+    .skin-kuromi .bubble-deco::after {
+      content:""; position:absolute; top:-6px; width:9px; height:11px;
+      background:#ff7ba9; border-radius:50% 50% 0 0;
+    }
+    .skin-kuromi .bubble-deco::before { left:1px; transform:rotate(-12deg); }
+    .skin-kuromi .bubble-deco::after  { right:1px; transform:rotate(12deg); }
+
+    /* 凯蒂猫：红色蝴蝶结（结心 + 双翼） */
+    .skin-kitty .bubble-deco { top:-11px; left:14px; width:9px; height:10px;
+      background:#ff1f56; border-radius:45%; z-index:1; }
+    .skin-kitty .bubble-deco::before,
+    .skin-kitty .bubble-deco::after {
+      content:""; position:absolute; top:-1px; width:13px; height:14px;
+      background:linear-gradient(180deg, #ff8da8 0%, #ff2e63 100%);
+      border-radius:4px;
+    }
+    .skin-kitty .bubble-deco::before { left:-13px; transform:skewX(-14deg) rotate(8deg); }
+    .skin-kitty .bubble-deco::after  { right:-13px; transform:skewX(14deg) rotate(-8deg); }
+
+    @media (hover:none) { .dual-bubble-actions { opacity:1; } }
+    @media (max-width:560px) {
+      .dual-bubble { max-width:84%; }
+      .skin-selector { flex-wrap:wrap; }
+    }
   </style>
 </head>
 <body>
@@ -560,40 +705,49 @@
       <section id="dual-view" class="workspace-section hidden">
         <div class="glass panel">
           <div class="panel-head">
-            <div><p class="panel-kicker">DUAL SPACE</p><h2 class="panel-title">双人空间</h2><p class="panel-copy">你和 TA 的日常记录板：写留言、传照片、贴心情。发出去对方实时可见，点照片可放大。</p></div>
-            <div class="panel-actions"><button id="dual-new-post" class="btn btn-primary lift" type="button">+ 写一条</button><button id="dual-sync-url-toggle" class="btn glass-soft lift" type="button">同步设置</button></div>
+            <div><p class="panel-kicker">DUAL SPACE · 💙</p><h2 class="panel-title">双人空间</h2><p class="panel-copy">你们的小信箱：留言、照片、心情都云端实时同步到对方，点照片可放大。</p></div>
+            <div class="panel-actions"><button id="dual-new-post" class="btn btn-primary lift" type="button">💌 写一条</button></div>
           </div>
+
+          <div class="skin-selector" role="group" aria-label="气泡皮肤">
+            <span class="skin-selector-label">气泡皮肤</span>
+            <button class="skin-btn" data-skin="cinnamoroll" type="button" title="玉桂狗"><span class="skin-emoji">🐶</span>玉桂狗</button>
+            <button class="skin-btn" data-skin="kuromi" type="button" title="库洛米"><span class="skin-emoji">🎀</span>库洛米</button>
+            <button class="skin-btn" data-skin="kitty" type="button" title="凯蒂猫"><span class="skin-emoji">🐱</span>凯蒂猫</button>
+          </div>
+
           <form id="dual-form" class="glass-soft composer">
             <div class="field-grid">
-              <div class="field full"><label for="dual-author">这条是谁写的</label><select id="dual-author" class="input"><option value="A">你</option><option value="B">同伴</option></select></div>
-              <div class="field full"><label for="dual-text">日常 / 留言</label><textarea id="dual-text" class="input" maxlength="500" placeholder="今天过得怎么样？告诉 TA…"></textarea></div>
+              <div class="field full"><label for="dual-text">今日留言</label><textarea id="dual-text" class="input" maxlength="500" placeholder="今天过得怎么样？告诉 TA…"></textarea></div>
               <div class="field full"><label>今天的心情</label><div id="dual-mood-options" class="mood-options"></div></div>
               <div class="field full"><label>挑个小贴纸</label><div id="dual-sticker-options" class="sticker-options"></div></div>
               <div class="field full"><label for="dual-image-input">配图（可选，自动压缩后上传）</label><input id="dual-image-input" class="input" type="file" accept="image/*" style="padding:8px" /></div>
-              <div class="field full" id="dual-image-preview" style="display:none"><img id="dual-image-preview-img" alt="预览" style="max-width:100%;max-height:220px;border-radius:12px;border:1px solid var(--glass-border)" /><button id="dual-image-clear" type="button" class="btn btn-quiet" style="min-height:32px;font-size:12px">移除图片</button></div>
+              <div class="field full" id="dual-image-preview" style="display:none">
+                <img id="dual-image-preview-img" alt="预览" style="max-width:100%;max-height:220px;border-radius:14px;border:1px solid #d7e9fa" />
+                <button id="dual-image-clear" type="button" class="btn btn-quiet" style="min-height:32px;font-size:12px;color:#f2769b">移除图片</button>
+              </div>
             </div>
-            <div class="composer-actions"><button id="dual-cancel" class="btn btn-quiet" type="button">取消</button><button class="btn btn-primary" type="submit">发送</button></div>
+            <div class="composer-actions"><button id="dual-cancel" class="btn btn-quiet" type="button">取消</button><button class="btn btn-primary" type="submit">发送 💌</button></div>
           </form>
+
           <div class="stats dual-stats">
             <article class="glass lift stat-card"><p class="stat-label">留言总数</p><p id="dual-count" class="stat-value">0</p><p class="stat-sub">收藏的小对话</p></article>
-            <article class="glass lift stat-card"><p class="stat-label">你的留言</p><p id="dual-count-a" class="stat-value">0</p><p class="stat-sub">你写下的</p></article>
-            <article class="glass lift stat-card"><p class="stat-label">同伴留言</p><p id="dual-count-b" class="stat-value">0</p><p class="stat-sub">TA 写下的</p></article>
+            <article class="glass lift stat-card"><p class="stat-label">我的留言</p><p id="dual-count-a" class="stat-value">0</p><p class="stat-sub">我写下的</p></article>
+            <article class="glass lift stat-card"><p class="stat-label">TA 的留言</p><p id="dual-count-b" class="stat-value">0</p><p class="stat-sub">TA 写下的</p></article>
             <article class="glass lift stat-card"><p class="stat-label">今日记录</p><p id="dual-today" class="stat-value">0</p><p class="stat-sub">今天的日常</p></article>
           </div>
+
           <div id="dual-list" class="dual-list"></div>
           <div id="dual-empty" class="empty-state hidden"><div class="glass-soft empty-icon">💌</div><p class="panel-title" style="font-size:16px">还没有日常记录</p><p>写下今天的小事，或传一张照片给 TA。</p></div>
-          <div id="dual-sync-panel" class="glass-soft dual-sync hidden">
-            <p class="panel-copy" style="margin-top:0">已接入云端实时同步；也可填一个备用同步地址：</p>
-            <div class="field"><label for="dual-sync-url">同步地址（可选）</label><input id="dual-sync-url" class="input" placeholder="https://你的同步服务/posts" /></div>
-            <p class="panel-copy">不填则走 Supabase 实时同步；断网时自动回退本地。</p>
-            <div class="composer-actions"><button id="dual-sync-close" class="btn btn-primary" type="button">完成</button></div>
-          </div>
         </div>
       </section>
 
-      <p class="footer-note">恋学 · 学习空间 — 数据仅保存在当前浏览器 · 每日一句在线获取（断网自动回退）· 纯签到 + 积分（周末双倍）+ 成就 · 可接入 AI 接口 · 可选登录（Supabase）· 双人空间云端实时同步</p>
+      <p class="footer-note">恋学 · 学习空间 — 数据仅保存在当前浏览器 · 每日一句在线获取（断网自动回退）· 纯签到 + 积分（周末双倍）+ MC 成就 · 可选登录（Supabase）· 双人空间云端实时同步</p>
     </main>
   </div>
+
+  <!-- 成就解锁弹窗容器（右上角） -->
+  <div id="achv-toast-wrap"></div>
 
   <!-- ======= 图片大图查看 ======= -->
   <div id="image-viewer" class="modal hidden" role="dialog" aria-modal="true" aria-label="图片查看">
@@ -603,10 +757,10 @@
     </div>
   </div>
 
-  <!-- ======= 成就 · 我的世界风格 ======= -->
+  <!-- ======= 成就 · MC 像素面板（z 指数高于签到面板） ======= -->
   <div id="achv-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="成就">
     <div class="modal-card mc-achv-card">
-      <div class="modal-head"><h3 class="mc-title">⚔ 成 就 · ACHIEVEMENTS</h3><button id="achv-close" type="button" class="icon-btn" aria-label="关闭">×</button></div>
+      <div class="modal-head"><h3 class="mc-title">⚔ ACHIEVEMENTS</h3><button id="achv-close" type="button" class="icon-btn" aria-label="关闭">×</button></div>
       <div id="achv-grid" class="mc-grid"></div>
       <div id="achv-progress" class="mc-progress"></div>
     </div>
@@ -627,7 +781,7 @@
     </form>
   </div>
 
-  <!-- ======= 今日签到弹窗（纯签到 + 积分 + 成就） ======= -->
+  <!-- ======= 今日签到弹窗（仅当天可签） ======= -->
   <div id="checkin-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="checkin-modal-title">
     <form id="checkin-form" class="modal-card">
       <div class="modal-head"><h2 id="checkin-modal-title" class="modal-title">今日签到</h2><button id="close-checkin" type="button" class="icon-btn" aria-label="关闭">×</button></div>
@@ -645,13 +799,12 @@
         <div id="calendar-grid" class="calendar-grid"></div>
       </div>
       <p id="integral-today-hint" class="panel-copy" style="margin:0 0 12px;color:var(--low)"></p>
-      <div class="modal-actions"><button id="cancel-checkin" class="btn btn-quiet" type="button">取消</button><button class="btn btn-primary" type="submit">签到</button></div>
+      <p id="checkin-lock-hint" class="panel-copy" style="margin:0 0 12px;color:var(--danger);display:none"></p>
+      <div class="modal-actions"><button id="cancel-checkin" class="btn btn-quiet" type="button">取消</button><button id="checkin-submit-btn" class="btn btn-primary" type="submit">签到</button></div>
     </form>
   </div>
 
-  <!-- CDN：Three.js（async，不阻塞业务脚本） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" async></script>
-  <!-- CDN：Supabase SDK -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
     /* ========[背景系统] Three.js 深蓝流体——就绪才启动，失败自动降级====== */
@@ -711,13 +864,10 @@
     })();
   </script>
   <script>
-    /* ================================================================
-       [应用主逻辑] v6.11 · 纯签到 + 积分 + 成就
-       ================================================================ */
     (() => {
       const $ = (id) => { const el = document.getElementById(id); if (!el) console.warn('[恋学] 页面缺少元素 #' + id); return el; };
       function on(id, evt, fn) { const el = document.getElementById(id); if (!el) { console.warn('[恋学] 跳过绑定：找不到 #' + id); return; } el.addEventListener(evt, fn); }
-      const TASK_KEY='focus-list-tasks-v1'; const CERT_KEY='focus-list-certs-v1'; const CHECKIN_KEY='focus-list-checkins-v1'; const COUNTDOWN_KEY='focus-list-countdowns-v1'; const POMO_KEY='focus-list-pomodoro-v1'; const MINDMAP_KEY='focus-list-mindmaps-v1'; const DUAL_KEY='focus-list-dual-v1'; const MISTAKE_KEY='focus-list-mistakes-v1'; const VOCAB_KEY='focus-list-vocab-v1'; const QUOTE_KEY='focus-list-quotes-v1'; const BG_SETTINGS_KEY='focus-list-bg-settings-v1';
+      const TASK_KEY='focus-list-tasks-v1'; const CERT_KEY='focus-list-certs-v1'; const CHECKIN_KEY='focus-list-checkins-v1'; const COUNTDOWN_KEY='focus-list-countdowns-v1'; const POMO_KEY='focus-list-pomodoro-v1'; const MINDMAP_KEY='focus-list-mindmaps-v1'; const DUAL_KEY='focus-list-dual-v1'; const MISTAKE_KEY='focus-list-mistakes-v1'; const VOCAB_KEY='focus-list-vocab-v1'; const QUOTE_KEY='focus-list-quotes-v1'; const BG_SETTINGS_KEY='focus-list-bg-settings-v1'; const ACHV_TOAST_KEY='focus-list-achv-toasted-v1';
       function safeSet(key, val) { try { localStorage.setItem(key, val); } catch (e) { console.warn('[恋学] 存储写入失败，数据仅保留在内存', key); } }
       const CERT_URLS = { cet4:'https://www.ixuecheng.cn/home', cet6:'https://www.ixuecheng.cn/home', ncre2:'https://www.xiaoheiketang.com/personal/myCourse', 'accounting-junior':'https://www.zlketang.com/personal/index.html?name=1' };
 
@@ -734,7 +884,7 @@
       async function handleLogout() { const sb = ensureSupabase(); if (!sb) return; await sb.auth.signOut(); authUser = null; renderAuthArea(); }
       function initAuth() { const sb = ensureSupabase(); if (!sb) { console.warn('[恋学] Supabase SDK 未加载，登录模块不可用（不影响其他功能）'); renderAuthArea(); return; } sb.auth.getSession().then(({ data }) => { authUser = (data && data.session && data.session.user) || null; renderAuthArea(); }).catch(() => { renderAuthArea(); }); sb.auth.onAuthStateChange((event, session) => { authUser = (session && session.user) || null; renderAuthArea(); }); }
 
-      /* ---- 双人空间 ---- */
+      /* ---- 双人空间（实时同步 + 图片上传辅助） ---- */
       let dualChannel = null; let dualImageFile = null;
       function dualPostFromRow(r) { return { id: r.id, author: r.author === 'B' ? 'B' : 'A', text: r.text || '', mood: r.mood || '', sticker: r.sticker || '', image_url: r.image_url || '', ts: new Date(r.created_at).getTime() }; }
       function compressImage(file, maxSide = 1280, quality = 0.82) { return new Promise((resolve) => { const img = new Image(); const url = URL.createObjectURL(file); img.onload = () => { let { width, height } = img; if (width > maxSide || height > maxSide) { const ratio = Math.min(maxSide / width, maxSide / height); width = Math.round(width * ratio); height = Math.round(height * ratio); } const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); canvas.toBlob((blob) => { URL.revokeObjectURL(url); resolve(blob || file); }, 'image/jpeg', quality); }; img.onerror = () => { URL.revokeObjectURL(url); resolve(file); }; img.src = url; }); }
@@ -747,9 +897,8 @@
       /* ===== 业务状态 ===== */
       let tasks = loadTasks(); let certs; let checkins; let countdowns; let pomodoro; let pomodoroTimer = null; let pomodoroNotice = ''; let filter = 'all'; let tagFilter = 'all'; let search = ''; let activeView = 'tasks'; let draggedId = null; let calendarCursor = new Date(new Date().getFullYear(),new Date().getMonth(),1); let editingCountdownId = null;
       let mindmaps = []; let mmCurrentId = null; let mmSelectedId = null; let mmApiEndpoint = ''; let mmEditing = false;
-      const mmPalette = ['#c9ff00','#7effc6','#ff9ef5','#6ecbff','#ffbb6e','#a89bff','#ff8a8a'];
-      const MM = { W:210, H:40, COL:64, ROW:15, PAD:28 };
-      let dual = loadDual(); let dualAuthor = 'A'; let dualMoodSel = ''; let dualStickerSel = ''; let editingDualId = null; let dualTimer = null;
+      const mmPalette = ['#c9ff00','#7effc6','#ff9ef5','#6ecbff','#ffbb6e','#a89bff','#ff8a8a']; const MM = { W:210, H:40, COL:64, ROW:15, PAD:28 };
+      let dual = loadDual(); let dualMoodSel = ''; let dualStickerSel = ''; let editingDualId = null;
       const dualStickers = ['🌸','❤️','🌟','💪','☕','🎂','🐱','🐶','✨','🍀','🌈','🦋','🔥','📖'];
       let mistakes = loadMistakes(); let mistakeFilter = 'all'; let mistakeSearch = ''; let editingMistakeId = null;
       let vocab = loadVocab(); let vocabFilter = 'all'; let vocabSearch = ''; let editingVocabId = null;
@@ -757,14 +906,14 @@
       let bgSettings = (()=>{ try { const raw=JSON.parse(localStorage.getItem(BG_SETTINGS_KEY)); return { intensity: typeof raw?.intensity==='number'?raw.intensity:60, speed: typeof raw?.speed==='number'?raw.speed:70, scan: raw?.scan!==false, simple: !!raw?.simple }; } catch { return { intensity:60, speed:70, scan:true, simple:false }; } })();
       function saveBgSettings(){ safeSet(BG_SETTINGS_KEY, JSON.stringify(bgSettings)); if (window.applyBgSettings) window.applyBgSettings(bgSettings); }
 
-      /* ===== 积分系统 ===== */
+      /* ===== 积分 ===== */
       function dailyPoints(key) { const d = new Date(key + 'T00:00:00'); const day = d.getDay(); return (day === 0 || day === 6) ? 2 : 1; }
       function calcTotalIntegral() { let total = 0; Object.keys(checkins || {}).forEach((k) => { if (checkins[k]) total += (Number(checkins[k].points) || dailyPoints(k)); }); return total; }
       function countWeekend() { let n = 0; Object.keys(checkins || {}).forEach((k) => { const d = new Date(k + 'T00:00:00'); const day = d.getDay(); if (day === 0 || day === 6) n += 1; }); return n; }
       function countMonth() { const now = new Date(); const prefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; return Object.keys(checkins || {}).filter((k) => k.indexOf(prefix) === 0).length; }
       function totalDays() { return Object.keys(checkins || {}).length; }
 
-      /* ===== 成就（我的世界风格） ===== */
+      /* ===== 成就（MC 像素） ===== */
       const ACHIEVEMENTS = [
         { id:'first', ico:'🌱', name:'第一步', desc:'累计签到 1 天', check:() => totalDays() >= 1 },
         { id:'d3', ico:'📅', name:'三日之约', desc:'连续签到 3 天', check:() => calcStreak() >= 3 },
@@ -778,12 +927,46 @@
         { id:'month', ico:'👑', name:'全勤之月', desc:'当月签到不少于 28 天', check:() => countMonth() >= 28 }
       ];
       function achievementsUnlocked() { return ACHIEVEMENTS.filter((a) => { try { return a.check(); } catch (e) { return false; } }); }
-      function renderAchievements() { const grid = $('achv-grid'); const progress = $('achv-progress'); if (!grid) return; const unlocked = achievementsUnlocked().map((a) => a.id); grid.innerHTML = ACHIEVEMENTS.map((a) => `<div class="mc-slot ${unlocked.includes(a.id) ? 'unlocked' : 'locked'}"><span class="mc-slot-ico">${unlocked.includes(a.id) ? a.ico : '🔒'}</span><span class="mc-slot-name">${escapeHtml(a.name)}</span><span class="mc-slot-desc">${escapeHtml(a.desc)}</span><span class="mc-slot-state">${unlocked.includes(a.id) ? '已解锁' : '未解锁'}</span></div>`).join(''); if (progress) progress.textContent = `进度：已解锁 ${unlocked.length} / ${ACHIEVEMENTS.length} · 总积分 ${calcTotalIntegral()} · 已签到 ${totalDays()} 天`; }
+      function renderAchievements() { const grid = $('achv-grid'); const progress = $('achv-progress'); if (!grid) return; const unlocked = achievementsUnlocked().map((a) => a.id); grid.innerHTML = ACHIEVEMENTS.map((a) => `<div class="mc-slot ${unlocked.includes(a.id) ? 'unlocked' : 'locked'}"><span class="mc-slot-ico">${unlocked.includes(a.id) ? a.ico : '🔒'}</span><span class="mc-slot-name">${escapeHtml(a.name)}</span><span class="mc-slot-desc">${escapeHtml(a.desc)}</span><span class="mc-slot-state">${unlocked.includes(a.id) ? 'COMPLETED' : 'LOCKED'}</span></div>`).join(''); if (progress) progress.textContent = `PROGRESS ${unlocked.length}/${ACHIEVEMENTS.length} · POINTS ${calcTotalIntegral()} · DAYS ${totalDays()}`; }
       function openAchievements() { const modal = $('achv-modal'); if (!modal) return; renderAchievements(); modal.classList.remove('hidden'); modal.classList.remove('closing'); }
       function closeAchievements() { const modal = $('achv-modal'); if (!modal || modal.classList.contains('hidden')) return; modal.classList.add('closing'); setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('closing'); }, 200); }
-      function renderIntegral() { if ($('integral-total')) $('integral-total').textContent = calcTotalIntegral(); const todayKey = dateKey(new Date()); const hint = $('integral-today-hint'); if (hint) hint.textContent = checkins[todayKey] ? `今日已签到（+${checkins[todayKey].points || dailyPoints(todayKey)} 积分）` : `今日签到可得 ${dailyPoints(todayKey)} 积分${dailyPoints(todayKey) === 2 ? '（周末双倍 🎉）' : ''}`; if ($('home-points-stat')) $('home-points-stat').textContent = calcTotalIntegral(); if ($('home-achv-stat')) $('home-achv-stat').textContent = achievementsUnlocked().length; }
 
-      /* ===== 数据加载与持久化 ===== */
+      /* ===== 成就解锁 · 右上角弹窗 ===== */
+      let achvToasted = loadAchvToasted();
+      function loadAchvToasted() { try { const raw = JSON.parse(localStorage.getItem(ACHV_TOAST_KEY)); return Array.isArray(raw) ? raw : []; } catch (e) { return []; } }
+      function saveAchvToasted() { safeSet(ACHV_TOAST_KEY, JSON.stringify(achvToasted)); }
+      function showAchvToast(a) {
+        const wrap = $('achv-toast-wrap'); if (!wrap) return;
+        const t = document.createElement('div');
+        t.className = 'achv-toast';
+        t.innerHTML = `<span class="achv-toast-ico">${a.ico}</span><div><div class="achv-toast-title">ACHIEVEMENT · ${escapeHtml(a.name)}</div><div class="achv-toast-desc">${escapeHtml(a.desc)}</div></div>`;
+        wrap.appendChild(t);
+        requestAnimationFrame(() => { t.classList.add('show'); setTimeout(() => t.classList.add('glow'), 200); });
+        setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 450); }, 5200);
+      }
+      function checkAchievementToasts() {
+        const unlockedIds = achievementsUnlocked().map((a) => a.id);
+        let fresh = false;
+        unlockedIds.forEach((id) => {
+          if (achvToasted.includes(id)) return;
+          achvToasted.push(id);
+          const a = ACHIEVEMENTS.find((x) => x.id === id);
+          if (a) showAchvToast(a);
+          fresh = true;
+        });
+        if (fresh) saveAchvToasted();
+      }
+      function renderIntegral() {
+        if ($('integral-total')) $('integral-total').textContent = calcTotalIntegral();
+        const todayKey = dateKey(new Date());
+        const hint = $('integral-today-hint');
+        if (hint) hint.textContent = checkins[todayKey] ? `今日已签到（+${checkins[todayKey].points || dailyPoints(todayKey)} 积分）` : `今日签到可得 ${dailyPoints(todayKey)} 积分${dailyPoints(todayKey) === 2 ? '（周末双倍 🎉）' : ''}`;
+        if ($('home-points-stat')) $('home-points-stat').textContent = calcTotalIntegral();
+        if ($('home-achv-stat')) $('home-achv-stat').textContent = achievementsUnlocked().length;
+        checkAchievementToasts();
+      }
+
+      /* ===== 数据 ===== */
       const seedCerts = [
         { id:'cet4', name:'英语四级', desc:'大学英语基础能力证书，覆盖听力、阅读、写作与翻译。', time:'通常 6 月、12 月考试，3 月与 9 月报名。', difficulty:3, status:'todo' },
         { id:'cet6', name:'英语六级', desc:'面向更高阶英语综合能力的全国性考试。', time:'通常 6 月、12 月考试，3 月与 9 月报名。', difficulty:4, status:'todo' },
@@ -803,13 +986,13 @@
       function loadCountdowns() { try { const raw = JSON.parse(localStorage.getItem(COUNTDOWN_KEY)); return Array.isArray(raw) ? raw : []; } catch { return []; } }
       function loadPomodoro() { try { const raw = JSON.parse(localStorage.getItem(POMO_KEY)); return { work:Number(raw?.work)||25, break:Number(raw?.break)||5, mode:raw?.mode === 'break' ? 'break' : 'work', seconds:Number.isFinite(raw?.seconds) ? raw.seconds : (Number(raw?.work)||25)*60, completed:Number(raw?.completed)||0 }; } catch { return { work:25, break:5, mode:'work', seconds:1500, completed:0 }; } }
       function loadMindMaps() { try { const raw = JSON.parse(localStorage.getItem(MINDMAP_KEY)); if (raw && typeof raw === 'object' && Array.isArray(raw.maps)) { mindmaps = raw.maps; mmCurrentId = raw.currentMapId; mmApiEndpoint = typeof raw.endpoint === 'string' ? raw.endpoint : ''; if (!mindmaps.some((m) => m.id === mmCurrentId)) mmCurrentId = mindmaps[0]?.id || null; return; } } catch {} mindmaps = []; mmCurrentId = null; mmApiEndpoint = ''; }
-      function loadDual() { try { const raw = JSON.parse(localStorage.getItem(DUAL_KEY)); return { identity: raw && raw.identity === 'B' ? 'B' : 'A', syncUrl: raw && typeof raw.syncUrl === 'string' ? raw.syncUrl : '', posts: Array.isArray(raw && raw.posts) ? raw.posts : [] }; } catch { return { identity:'A', syncUrl:'', posts: [] }; } }
+      function loadDual() { try { const raw = JSON.parse(localStorage.getItem(DUAL_KEY)); const SKINS = ['cinnamoroll','kuromi','kitty']; return { identity: raw && raw.identity === 'B' ? 'B' : 'A', skin: raw && SKINS.includes(raw.skin) ? raw.skin : 'cinnamoroll', posts: Array.isArray(raw && raw.posts) ? raw.posts : [] }; } catch { return { identity:'A', skin:'cinnamoroll', posts: [] }; } }
       function loadMistakes() { try { const raw = JSON.parse(localStorage.getItem(MISTAKE_KEY)); return Array.isArray(raw) ? raw : []; } catch { return []; } }
       function loadVocab() { try { const raw = JSON.parse(localStorage.getItem(VOCAB_KEY)); return Array.isArray(raw) ? raw : []; } catch { return []; } }
       function loadQuoteUsed() { try { const raw = JSON.parse(localStorage.getItem(QUOTE_KEY)); return Array.isArray(raw) ? raw.slice(-200) : []; } catch { return []; } }
       function persistQuoteUsed() { safeSet(QUOTE_KEY, JSON.stringify(quoteUsed.slice(-200))); }
       function persist() { try { safeSet(TASK_KEY, JSON.stringify(tasks)); safeSet(CERT_KEY, JSON.stringify(certs)); safeSet(CHECKIN_KEY, JSON.stringify(checkins)); safeSet(COUNTDOWN_KEY, JSON.stringify(countdowns)); safeSet(POMO_KEY, JSON.stringify({...pomodoro,running:undefined})); safeSet(MISTAKE_KEY, JSON.stringify(mistakes)); safeSet(VOCAB_KEY, JSON.stringify(vocab)); } catch (e) { console.warn('[恋学] persist 异常', e); } }
-      function persistDual() { safeSet(DUAL_KEY, JSON.stringify({ identity: dual.identity, syncUrl: dual.syncUrl, posts: dual.posts })); }
+      function persistDual() { safeSet(DUAL_KEY, JSON.stringify({ identity: dual.identity, skin: dual.skin, posts: dual.posts })); }
       function persistMindMaps() { safeSet(MINDMAP_KEY, JSON.stringify({ maps: mindmaps, currentMapId: mmCurrentId, endpoint: mmApiEndpoint })); }
       function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2,9)}`; }
       function escapeHtml(text) { return String(text).replace(/[&<>'"]/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[c])); }
@@ -827,16 +1010,20 @@
       function renderTasks() { try { renderTags(); const visible = tasks.filter(taskMatches); const priorityText = { high:'高优先级', medium:'中优先级', low:'低优先级' }; const priorityClass = { high:'high', medium:'medium', low:'low' }; const list = $('task-list'); if (!list) return; list.innerHTML = visible.map((task) => `<li class="task-card task-enter priority-${priorityClass[task.priority]} ${isOverdue(task) ? 'overdue' : ''}" draggable="true" data-id="${task.id}"><label class="check-label"><input type="checkbox" ${task.completed ? 'checked' : ''} aria-label="标记完成：${escapeHtml(task.text)}"><span class="check-box"><span class="checkmark">✓</span></span></label><div class="task-main"><p class="task-title ${task.completed ? 'done' : ''}">${escapeHtml(task.text)}</p>${task.notes ? `<p class="task-notes">${escapeHtml(task.notes)}</p>` : ''}<div class="task-meta"><span class="pill priority-pill ${priorityClass[task.priority]}">${priorityText[task.priority]}</span>${task.dueDate ? `<span class="due">${isOverdue(task) ? '⚠ 已过期 · ' : '截止 · '}${escapeHtml(task.dueDate)}</span>` : ''}${task.tags.map((tag) => `<span class="pill"># ${escapeHtml(tag)}</span>`).join('')}</div></div><div class="task-actions"><button class="mini-btn move-btn" data-direction="up" type="button" aria-label="上移任务" title="上移">↑</button><button class="mini-btn move-btn" data-direction="down" type="button" aria-label="下移任务" title="下移">↓</button><button class="mini-btn delete-btn" type="button" aria-label="删除：${escapeHtml(task.text)}" title="删除">×</button></div></li>`).join(''); const active = tasks.filter((t) => !t.completed).length; const completed = tasks.length - active; const percent = tasks.length ? Math.round(completed / tasks.length * 100) : 0; if ($('total-stat')) $('total-stat').textContent = tasks.length; if ($('active-stat')) $('active-stat').textContent = active; if ($('completed-stat')) $('completed-stat').textContent = completed; if ($('progress-stat')) $('progress-stat').textContent = `${percent}%`; if ($('progress-label')) $('progress-label').textContent = tasks.length ? `${completed} 项已完成` : '准备开始'; if ($('task-count')) $('task-count').textContent = `${active} 项未完成${tasks.length ? ` · 共 ${tasks.length} 项` : ''}`; if ($('clear-completed')) $('clear-completed').classList.toggle('hidden', completed === 0); if ($('empty-state')) $('empty-state').classList.toggle('hidden', visible.length > 0); if ($('empty-title')) $('empty-title').textContent = filter === 'completed' && completed === 0 ? '还没有已完成事项' : filter === 'active' && active === 0 ? '全部完成了' : '没有匹配的任务'; if ($('empty-copy')) $('empty-copy').textContent = search || tagFilter !== 'all' ? '试试清除搜索或标签筛选。' : '把想学的知识点记下来，轻松开始。'; document.querySelectorAll('.filter-btn[data-filter]').forEach((button) => { button.classList.toggle('active', button.dataset.filter === filter); button.setAttribute('aria-selected', button.dataset.filter === filter); }); } catch (e) { console.warn('[恋学] renderTasks 异常', e); } }
       function renderCerts() { try { const el = $('cert-list'); if (!el) return; el.innerHTML = certs.map((cert) => `<article class="glass lift cert-card ${cert.status === 'done' ? 'done' : ''}" data-cert-id="${cert.id}"><div class="cert-top"><h3 class="cert-name">${escapeHtml(cert.name)}</h3><span class="stars" aria-label="难度 ${cert.difficulty} 星">${'★'.repeat(Math.max(1,Math.min(5,Number(cert.difficulty)||1)))}${'☆'.repeat(5 - Math.max(1,Math.min(5,Number(cert.difficulty)||1)))}</span></div><p class="cert-desc">${escapeHtml(cert.desc || '自定义证书备考目标。')}</p><p class="cert-time">⌁ ${escapeHtml(cert.time || '时间待确认')}</p>${CERT_URLS[cert.id] ? `<p class="cert-link"><a href="${escapeHtml(CERT_URLS[cert.id])}" target="_blank" rel="noopener noreferrer">↗ 学习网站</a></p>` : ''}<div class="cert-footer"><button type="button" class="status-toggle ${cert.status === 'done' ? 'done' : ''}" data-cert-action="toggle">${cert.status === 'done' ? '✓ 已完成' : '待备考'}</button><button type="button" class="btn glass-soft" style="min-height:34px;padding:0 10px;font-size:11px" data-cert-action="task">生成待办</button></div></article>`).join(''); } catch (e) { console.warn('[恋学] renderCerts 异常', e); } }
       function dateKey(date) { const y = date.getFullYear(); const m = String(date.getMonth()+1).padStart(2,'0'); const d = String(date.getDate()).padStart(2,'0'); return `${y}-${m}-${d}`; }
-      function renderCalendar() { try { const year = calendarCursor.getFullYear(); const month = calendarCursor.getMonth(); if ($('calendar-month')) $('calendar-month').textContent = `${year} 年 ${month+1} 月`; const first = new Date(year,month,1).getDay(); const days = new Date(year,month+1,0).getDate(); const prevDays = new Date(year,month,0).getDate(); const cells = []; const selectedKey = $('checkin-date') ? $('checkin-date').value : dateKey(new Date()); for (let i=0;i<42;i++) { const day = i-first+1; let date; let muted = false; if (day < 1) { date = new Date(year,month-1,prevDays+day); muted = true; } else if (day > days) { date = new Date(year,month+1,day-days); muted = true; } else date = new Date(year,month,day); const key = dateKey(date); const checked = !!checkins[key] && checkins[key].points >= 1; const today = key === dateKey(new Date()); const sel = key === selectedKey; cells.push(`<button type="button" class="day-cell ${muted ? 'muted' : ''} ${today ? 'today' : ''} ${checked ? 'checked' : ''} ${sel ? 'selected' : ''}" data-date="${key}"><span class="day-number">${date.getDate()}</span></button>`); } if ($('calendar-grid')) $('calendar-grid').innerHTML = cells.join(''); } catch (e) { console.warn('[恋学] renderCalendar 异常', e); } }
+      function renderCalendar() { try { const year = calendarCursor.getFullYear(); const month = calendarCursor.getMonth(); if ($('calendar-month')) $('calendar-month').textContent = `${year} 年 ${month+1} 月`; const first = new Date(year,month,1).getDay(); const days = new Date(year,month+1,0).getDate(); const prevDays = new Date(year,month,0).getDate(); const cells = []; const selectedKey = $('checkin-date') ? $('checkin-date').value : dateKey(new Date()); const todayKey = dateKey(new Date()); for (let i=0;i<42;i++) { const day = i-first+1; let date; let muted = false; if (day < 1) { date = new Date(year,month-1,prevDays+day); muted = true; } else if (day > days) { date = new Date(year,month+1,day-days); muted = true; } else date = new Date(year,month,day); const key = dateKey(date); if (key > todayKey) muted = true; const checked = !!checkins[key] && checkins[key].points >= 1; const today = key === todayKey; const sel = key === selectedKey; cells.push(`<button type="button" class="day-cell ${muted ? 'muted' : ''} ${today ? 'today' : ''} ${checked ? 'checked' : ''} ${sel ? 'selected' : ''}" data-date="${key}"><span class="day-number">${date.getDate()}</span></button>`); } if ($('calendar-grid')) $('calendar-grid').innerHTML = cells.join(''); } catch (e) { console.warn('[恋学] renderCalendar 异常', e); } }
       function calcStreak() { const d = new Date(); if (!checkins[dateKey(d)]) d.setDate(d.getDate()-1); let streak = 0; while (checkins[dateKey(d)]) { streak += 1; d.setDate(d.getDate()-1); } return streak; }
       function openCheckin(date) {
+        const todayKey = dateKey(new Date()); const isToday = date === todayKey;
         const record = checkins[date] || {};
-        const today = dateKey(new Date()); const isToday = date === today;
         if ($('checkin-date')) $('checkin-date').value = date;
         if ($('checkin-modal-title')) $('checkin-modal-title').textContent = isToday ? '今日签到' : `${date} 签到`;
-        if ($('checkin-date-label')) $('checkin-date-label').textContent = `日期 · ${date}${record.points ? '（已签到）' : '（还没有记录）'}`;
+        if ($('checkin-date-label')) $('checkin-date-label').textContent = `日期 · ${date}${record.points ? '（已签到）' : '（未签到）'}`;
         if ($('checkin-streak')) $('checkin-streak').textContent = isToday ? `连续签到 ${calcStreak()} 天` : '打卡记录';
         if ($('checkin-today-tag')) $('checkin-today-tag').classList.toggle('hidden', !isToday);
+        const submitBtn = $('checkin-submit-btn');
+        const lockHint = $('checkin-lock-hint');
+        if (submitBtn) { submitBtn.disabled = !isToday; submitBtn.textContent = isToday ? '签到' : (date > todayKey ? '不可提前签' : '不可补签'); }
+        if (lockHint) { lockHint.style.display = isToday ? 'none' : 'block'; lockHint.textContent = date > todayKey ? '未来日期不能提前签到' : '只能签到当天，不可补签'; }
         renderIntegral();
         renderCalendar();
         const modal = $('checkin-modal'); if (!modal) return;
@@ -866,12 +1053,58 @@
       function mapToMarkdown(map) { let out = `# ${map.title || '未命名'}\n\n`; (function walk(node, path) { if (!path.length) out += `# ${node.text}\n\n`; else out += `${'  '.repeat(path.length - 1)}${path.join('.')}. ${node.text}\n`; node.children.forEach((c, i) => walk(c, [...path, i + 1])); })(map.root, []); return out; }
       function generateReviewMap() { if (!tasks.length) { alert('还没有学习任务，先到「学习任务」里添加几条吧。'); return; } const now = new Date(); const todayKey = dateKey(now); const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay()); const weekKeys = new Set(); for (let i=0;i<7;i++){ const d = new Date(weekStart); d.setDate(weekStart.getDate()+i); weekKeys.add(dateKey(d)); } const monthStart = new Date(now.getFullYear(), now.getMonth(), 1); const monthKeys = new Set(); const dim = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate(); for (let i=0;i<dim;i++){ const d = new Date(monthStart); d.setDate(monthStart.getDate()+i); monthKeys.add(dateKey(d)); } const taskKey = (t) => t.dueDate ? dateKey(new Date(`${t.dueDate}T00:00:00`)) : null; const uncompleted = tasks.filter((t) => !t.completed); const mk = (label, arr) => mmNode(label, arr.map((t) => mmNode(t.text, t.tags.length ? t.tags.map((tag) => mmNode('# '+tag)) : []))); const root = mmNode('学习任务复习'); root.children = [ mk('今日任务', uncompleted.filter((t) => taskKey(t) === todayKey)), mk('本周任务', uncompleted.filter((t) => taskKey(t) && weekKeys.has(taskKey(t)))), mk('本月任务', uncompleted.filter((t) => taskKey(t) && monthKeys.has(taskKey(t)))) ]; if (!root.children.some((c) => c.children.length)) root.children = [ mk('未完成任务', uncompleted.slice(0, 20)) ]; const nm = { id: uid(), title: '任务复习脑图', root }; mindmaps.push(nm); mmCurrentId = nm.id; mmSelectedId = root.id; persistMindMaps(); renderMindMap(); setView('mindmap'); }
       function formatDualTime(ts) { const d = new Date(ts); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
-      function renderDual() { try { const list = $('dual-list'); if (!list) return; const sorted = [...dual.posts].sort((a, b) => b.ts - a.ts); list.innerHTML = sorted.map((p) => `<article class="glass lift dual-card dual-${p.author}" data-dual-id="${p.id}"><div class="dual-head"><span class="dual-author">${p.author === 'A' ? '你' : '同伴'}</span><span class="dual-time">${formatDualTime(p.ts)}</span><span class="dual-actions"><button class="mini-btn dual-edit" type="button" title="编辑">✎</button><button class="mini-btn dual-delete" type="button" title="删除">×</button></span></div><div class="dual-body">${p.sticker ? `<span class="dual-emoji">${escapeHtml(p.sticker)}</span>` : ''}${p.mood ? `<span class="dual-emoji">${escapeHtml(p.mood)}</span>` : ''}<p class="dual-text">${escapeHtml(p.text || '')}</p></div>${p.image_url ? `<div class="dual-media"><img src="${escapeHtml(p.image_url)}" alt="日常照片" /></div>` : ''}</article>`).join(''); if ($('dual-count')) $('dual-count').textContent = dual.posts.length; if ($('dual-count-a')) $('dual-count-a').textContent = dual.posts.filter((p) => p.author === 'A').length; if ($('dual-count-b')) $('dual-count-b').textContent = dual.posts.filter((p) => p.author === 'B').length; if ($('dual-today')) $('dual-today').textContent = dual.posts.filter((p) => dateKey(new Date(p.ts)) === dateKey(new Date())).length; if ($('dual-empty')) $('dual-empty').classList.toggle('hidden', dual.posts.length > 0); if ($('dual-author')) $('dual-author').value = dualAuthor; if ($('dual-mood-options')) $('dual-mood-options').innerHTML = moods.map((m) => `<button type="button" class="mood-btn ${dualMoodSel === m ? 'selected' : ''}" data-mood="${m}" aria-label="${m}">${m}</button>`).join(''); if ($('dual-sticker-options')) $('dual-sticker-options').innerHTML = dualStickers.map((s) => `<button type="button" class="sticker-btn ${dualStickerSel === s ? 'selected' : ''}" data-sticker="${s}" aria-label="${s}">${s}</button>`).join(''); } catch (e) { console.warn('[恋学] renderDual 异常', e); } }
-      function openDualForm(open = true) { const form = $('dual-form'); if (!form) return; form.classList.toggle('open', open); if (open) { editingDualId = null; if ($('dual-text')) $('dual-text').value = ''; dualMoodSel = ''; dualStickerSel = ''; dualImageFile = null; const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none'; const imgInp = $('dual-image-input'); if (imgInp) imgInp.value = ''; dualAuthor = dual.identity; renderDual(); const t = $('dual-text'); if (t) t.focus(); } }
-      async function dualPull() { if (!dual.syncUrl) return; try { const res = await fetch(dual.syncUrl, { cache:'no-store' }); if (!res.ok) return; const data = await res.json(); const remote = Array.isArray(data) ? data : (data && data.posts); if (Array.isArray(remote) && remote.length) { const byId = new Map(dual.posts.map((p) => [p.id, p])); remote.forEach((p) => { if (p && p.id) byId.set(p.id, { ...p }); }); dual.posts = [...byId.values()]; persistDual(); renderDual(); } } catch {} }
-      async function dualPush() { if (!dual.syncUrl) return; try { await fetch(dual.syncUrl, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: dual.posts }) }); } catch {} }
-      function stopDualSync() { if (dualTimer) { clearInterval(dualTimer); dualTimer = null; } }
-      function startDualSync() { stopDualSync(); if (dual.syncUrl) { dualPull(); dualTimer = setInterval(dualPull, 10000); } }
+      function renderDual() {
+        try {
+          const list = $('dual-list'); if (!list) return;
+          const view = $('dual-view');
+          if (view) {
+            view.classList.remove('skin-cinnamoroll', 'skin-kuromi', 'skin-kitty');
+            view.classList.add('skin-' + dual.skin);
+          }
+          document.querySelectorAll('.skin-btn').forEach((b) => b.classList.toggle('active', b.dataset.skin === dual.skin));
+          const sorted = [...dual.posts].sort((a, b) => b.ts - a.ts);
+          list.innerHTML = sorted.map((p) => {
+            const own = p.author === dual.identity;
+            const who = own ? '你' : '同伴';
+            const avatar = p.author === 'A' ? '🐶' : '🎀';
+            const moodSticker = [p.sticker, p.mood].filter(Boolean).map((s) => `<span class="dual-emoji">${escapeHtml(s)}</span>`).join('');
+            const media = p.image_url ? `<div class="dual-bubble-media"><img src="${escapeHtml(p.image_url)}" alt="日常照片" /></div>` : '';
+            const actions = `<span class="dual-bubble-actions"><button class="mini-btn dual-edit" type="button" title="编辑">✎</button><button class="mini-btn dual-delete" type="button" title="删除">×</button></span>`;
+            return `<div class="dual-row ${own ? 'right' : 'left'}" data-dual-id="${p.id}">
+              <span class="dual-avatar" aria-hidden="true">${avatar}</span>
+              <div class="dual-bubble">
+                <span class="bubble-deco" aria-hidden="true"></span>
+                ${media}
+                ${p.text ? `<p class="dual-bubble-text">${escapeHtml(p.text)}</p>` : ''}
+                ${moodSticker ? `<div class="dual-bubble-emoji-row">${moodSticker}</div>` : ''}
+                <div class="dual-bubble-head"><span class="dual-bubble-who">${who}</span><span class="dual-bubble-time">${formatDualTime(p.ts)}</span></div>
+                ${actions}
+              </div>
+            </div>`;
+          }).join('');
+          if ($('dual-count')) $('dual-count').textContent = dual.posts.length;
+          if ($('dual-count-a')) $('dual-count-a').textContent = dual.posts.filter((p) => p.author === 'A').length;
+          if ($('dual-count-b')) $('dual-count-b').textContent = dual.posts.filter((p) => p.author === 'B').length;
+          if ($('dual-today')) $('dual-today').textContent = dual.posts.filter((p) => dateKey(new Date(p.ts)) === dateKey(new Date())).length;
+          if ($('dual-empty')) $('dual-empty').classList.toggle('hidden', dual.posts.length > 0);
+          if ($('dual-mood-options')) $('dual-mood-options').innerHTML = moods.map((m) => `<button type="button" class="mood-btn ${dualMoodSel === m ? 'selected' : ''}" data-mood="${m}" aria-label="${m}">${m}</button>`).join('');
+          if ($('dual-sticker-options')) $('dual-sticker-options').innerHTML = dualStickers.map((s) => `<button type="button" class="sticker-btn ${dualStickerSel === s ? 'selected' : ''}" data-sticker="${s}" aria-label="${s}">${s}</button>`).join('');
+        } catch (e) { console.warn('[恋学] renderDual 异常', e); }
+      }
+      function openDualForm(open = true) {
+        const form = $('dual-form'); if (!form) return;
+        form.classList.toggle('open', open);
+        if (open) {
+          editingDualId = null;
+          if ($('dual-text')) $('dual-text').value = '';
+          dualMoodSel = ''; dualStickerSel = '';
+          dualImageFile = null;
+          const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none';
+          const imgInp = $('dual-image-input'); if (imgInp) imgInp.value = '';
+          renderDual();
+          const t = $('dual-text'); if (t) t.focus();
+        }
+      }
       function renderMistakes() { try { const list = $('mistake-list'); if (!list) return; const needle = mistakeSearch.trim().toLowerCase(); const visible = mistakes.filter((m) => (!needle || `${m.problem} ${m.subject} ${m.reason} ${m.answer}`.toLowerCase().includes(needle)) && (mistakeFilter === 'all' || (mistakeFilter === 'open' ? m.status === 'open' : m.status === 'learned'))); list.innerHTML = visible.map((m) => `<article class="glass lift item-card" data-mistake-id="${m.id}"><div class="item-head"><span class="pill">${escapeHtml(m.subject || '未分类')}</span><span class="pill ${m.status === 'learned' ? 'status-learned' : 'status-open'}">${m.status === 'learned' ? '已掌握' : '未掌握'}</span><span class="item-actions"><button class="mini-btn mistake-toggle" type="button" title="切换掌握状态">✓</button><button class="mini-btn mistake-edit" type="button" title="编辑">✎</button><button class="mini-btn mistake-delete" type="button" title="删除">×</button></span></div><p class="item-title">${escapeHtml(m.problem)}</p>${m.reason ? `<p class="item-sub">原因 · ${escapeHtml(m.reason)}</p>` : ''}${m.answer ? `<p class="item-sub">答案 · ${escapeHtml(m.answer)}</p>` : ''}<div class="item-meta"><span class="due">${formatDualTime(m.ts)}</span></div></article>`).join(''); const open = mistakes.filter((m) => m.status === 'open').length; const learned = mistakes.length - open; if ($('mistake-total-stat')) $('mistake-total-stat').textContent = mistakes.length; if ($('mistake-open-stat')) $('mistake-open-stat').textContent = open; if ($('mistake-learned-stat')) $('mistake-learned-stat').textContent = learned; if ($('mistake-today-stat')) $('mistake-today-stat').textContent = mistakes.filter((m) => dateKey(new Date(m.ts)) === dateKey(new Date())).length; if ($('mistake-count')) $('mistake-count').textContent = `${open} 道未掌握${mistakes.length ? ` · 共 ${mistakes.length} 道` : ''}`; if ($('mistake-empty')) $('mistake-empty').classList.toggle('hidden', visible.length > 0); document.querySelectorAll('.filter-btn[data-mf]').forEach((button) => button.classList.toggle('active', button.dataset.mf === mistakeFilter)); } catch (e) { console.warn('[恋学] renderMistakes 异常', e); } }
       function openMistakeForm(open = true) { const form = $('mistake-form'); if (!form) return; form.classList.toggle('open', open); if (open) { editingMistakeId = null; if ($('mistake-problem-input')) $('mistake-problem-input').value = ''; if ($('mistake-answer-input')) $('mistake-answer-input').value = ''; if ($('mistake-subject-input')) $('mistake-subject-input').value = ''; if ($('mistake-reason-input')) $('mistake-reason-input').value = ''; if ($('mistake-status-input')) $('mistake-status-input').value = 'open'; const f = $('mistake-problem-input'); if (f) f.focus(); } }
       function renderVocab() { try { const list = $('vocab-list'); if (!list) return; const needle = vocabSearch.trim().toLowerCase(); const visible = vocab.filter((v) => (!needle || `${v.word} ${v.meaning} ${v.example}`.toLowerCase().includes(needle)) && (vocabFilter === 'all' || v.status === vocabFilter)); const statusMap = { new:'未学', learning:'学习中', mastered:'已掌握' }; const classMap = { new:'vocab-new', learning:'vocab-learning', mastered:'vocab-mastered' }; list.innerHTML = visible.map((v) => `<article class="glass lift item-card" data-vocab-id="${v.id}"><div class="item-head"><p class="vocab-word">${escapeHtml(v.word)}</p><span class="pill ${classMap[v.status]}">${statusMap[v.status]}</span><span class="item-actions"><button class="mini-btn vocab-cycle" type="button" title="切换掌握状态">⇄</button><button class="mini-btn vocab-edit" type="button" title="编辑">✎</button><button class="mini-btn vocab-delete" type="button" title="删除">×</button></span></div>${v.meaning ? `<p class="item-sub">${escapeHtml(v.meaning)}</p>` : ''}${v.example ? `<p class="item-sub">例句 · ${escapeHtml(v.example)}</p>` : ''}<div class="item-meta"><span class="due">${formatDualTime(v.ts)}</span></div></article>`).join(''); const learn = vocab.filter((v) => v.status === 'learning').length; const mastered = vocab.filter((v) => v.status === 'mastered').length; const fresh = vocab.length - learn - mastered; if ($('vocab-total-stat')) $('vocab-total-stat').textContent = vocab.length; if ($('vocab-new-stat')) $('vocab-new-stat').textContent = fresh; if ($('vocab-learning-stat')) $('vocab-learning-stat').textContent = learn; if ($('vocab-mastered-stat')) $('vocab-mastered-stat').textContent = mastered; if ($('vocab-count')) $('vocab-count').textContent = `${fresh} 个未学${vocab.length ? ` · 共 ${vocab.length} 个` : ''}`; if ($('vocab-empty')) $('vocab-empty').classList.toggle('hidden', visible.length > 0); document.querySelectorAll('.filter-btn[data-vf]').forEach((button) => button.classList.toggle('active', button.dataset.vf === vocabFilter)); } catch (e) { console.warn('[恋学] renderVocab 异常', e); } }
@@ -913,17 +1146,17 @@
       on('task-list','drop', (event) => { event.preventDefault(); const over = event.target.closest('.task-card'); if (!over || !draggedId || over.dataset.id === draggedId) return finishDrag(); const from = tasks.findIndex((task) => task.id === draggedId); const to = tasks.findIndex((task) => task.id === over.dataset.id); if (from < 0 || to < 0) return finishDrag(); const rect = over.getBoundingClientRect(); const insertAfter = event.clientY > rect.top + rect.height / 2; const [item] = tasks.splice(from,1); let insertAt = to + (insertAfter ? 1 : 0); if (from < insertAt) insertAt -= 1; tasks.splice(Math.max(0,Math.min(insertAt,tasks.length)),0,item); persist(); renderTasks(); requestAnimationFrame(() => document.querySelector(`.task-card[data-id="${item.id}"]`)?.classList.add('just-moved')); finishDrag(); });
       on('export-btn','click', () => { const payload = { version:3, exportedAt:new Date().toISOString(), tasks, certs, checkins, countdowns, pomodoro, mindmaps:{ maps:mindmaps, currentMapId:mmCurrentId, endpoint:mmApiEndpoint }, dual, mistakes, vocab }; const blob = new Blob([JSON.stringify(payload,null,2)], { type:'application/json' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `focus-list-backup-${new Date().toISOString().slice(0,10)}.json`; link.click(); URL.revokeObjectURL(link.href); });
       on('import-btn','click', () => { const f = $('import-file'); if (f) f.click(); });
-      on('import-file','change', (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const payload = JSON.parse(reader.result); const imported = Array.isArray(payload) ? payload : payload.tasks; if (!Array.isArray(imported)) throw new Error('invalid'); tasks = imported.map(normalizeTask); if (!Array.isArray(payload)) { if (Array.isArray(payload.certs)) certs = payload.certs; if (payload.checkins && typeof payload.checkins === 'object') checkins = payload.checkins; if (Array.isArray(payload.countdowns)) countdowns = payload.countdowns; if (payload.pomodoro && typeof payload.pomodoro === 'object') pomodoro = {...pomodoro,...payload.pomodoro}; if (payload.mindmaps && Array.isArray(payload.mindmaps.maps)) { mindmaps = payload.mindmaps.maps; mmCurrentId = payload.mindmaps.currentMapId; mmApiEndpoint = payload.mindmaps.endpoint || ''; if (!mindmaps.some((m) => m.id === mmCurrentId)) mmCurrentId = mindmaps[0]?.id || null; } if (payload.dual) { dual = { identity: payload.dual.identity === 'B' ? 'B' : 'A', syncUrl: typeof payload.dual.syncUrl === 'string' ? payload.dual.syncUrl : '', posts: Array.isArray(payload.dual.posts) ? payload.dual.posts : [] }; } if (Array.isArray(payload.mistakes)) mistakes = payload.mistakes; if (Array.isArray(payload.vocab)) vocab = payload.vocab; } persist(); persistMindMaps(); persistDual(); renderTasks(); renderCerts(); renderCalendar(); renderCountdowns(); renderPomodoro(); renderMindMap(); renderDual(); renderMistakes(); renderVocab(); renderIntegral(); alert('备份恢复成功'); } catch { alert('无法读取备份文件，请选择有效的 JSON 备份。'); } if (event.target) event.target.value = ''; }; reader.readAsText(file); });
+      on('import-file','change', (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const payload = JSON.parse(reader.result); const imported = Array.isArray(payload) ? payload : payload.tasks; if (!Array.isArray(imported)) throw new Error('invalid'); tasks = imported.map(normalizeTask); if (!Array.isArray(payload)) { if (Array.isArray(payload.certs)) certs = payload.certs; if (payload.checkins && typeof payload.checkins === 'object') checkins = payload.checkins; if (Array.isArray(payload.countdowns)) countdowns = payload.countdowns; if (payload.pomodoro && typeof payload.pomodoro === 'object') pomodoro = {...pomodoro,...payload.pomodoro}; if (payload.mindmaps && Array.isArray(payload.mindmaps.maps)) { mindmaps = payload.mindmaps.maps; mmCurrentId = payload.mindmaps.currentMapId; mmApiEndpoint = payload.mindmaps.endpoint || ''; if (!mindmaps.some((m) => m.id === mmCurrentId)) mmCurrentId = mindmaps[0]?.id || null; } if (payload.dual) { dual = { identity: payload.dual.identity === 'B' ? 'B' : 'A', skin: ['cinnamoroll','kuromi','kitty'].includes(payload.dual.skin) ? payload.dual.skin : 'cinnamoroll', posts: Array.isArray(payload.dual.posts) ? payload.dual.posts : [] }; } if (Array.isArray(payload.mistakes)) mistakes = payload.mistakes; if (Array.isArray(payload.vocab)) vocab = payload.vocab; } persist(); persistMindMaps(); persistDual(); renderTasks(); renderCerts(); renderCalendar(); renderCountdowns(); renderPomodoro(); renderMindMap(); renderDual(); renderMistakes(); renderVocab(); renderIntegral(); alert('备份恢复成功'); } catch { alert('无法读取备份文件，请选择有效的 JSON 备份。'); } if (event.target) event.target.value = ''; }; reader.readAsText(file); });
       on('new-cert-toggle','click', () => { const f = $('cert-form'); openCertForm(!(f && f.classList.contains('open'))); });
       on('cancel-cert','click', () => openCertForm(false));
       on('cert-form','submit', (event) => { event.preventDefault(); certs.push({ id:uid(), name:$('cert-name-input') ? $('cert-name-input').value.trim() : '', desc:$('cert-desc-input') ? $('cert-desc-input').value.trim() : '', time:$('cert-time-input') ? $('cert-time-input').value.trim() : '', difficulty:Number($('cert-difficulty-input') ? $('cert-difficulty-input').value : 3), status:'todo' }); persist(); renderCerts(); if (event.target) event.target.reset(); if ($('cert-difficulty-input')) $('cert-difficulty-input').value = '3'; openCertForm(false); });
       on('cert-list','click', (event) => { const card = event.target.closest('.cert-card'); if (!card) return; const cert = certs.find((item) => item.id === card.dataset.certId); if (!cert) return; const action = event.target.closest('[data-cert-action]')?.dataset.certAction; if (action === 'toggle') { cert.status = cert.status === 'done' ? 'todo' : 'done'; persist(); renderCerts(); } if (action === 'task') addGeneratedTask(cert); });
       document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => { setView(tab.dataset.view); revealModules(); scrollToModules(); }));
-      /* ---- 签到（纯签到 + 积分 + 成就） ---- */
+      /* ---- 签到（仅当天可签） ---- */
       on('calendar-prev','click', () => { calendarCursor = new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1); renderCalendar(); });
       on('calendar-next','click', () => { calendarCursor = new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+1,1); renderCalendar(); });
       on('calendar-grid','click', (event) => { const cell = event.target.closest('.day-cell'); if (cell) openCheckin(cell.dataset.date); });
-      on('checkin-form','submit', (event) => { event.preventDefault(); const date = $('checkin-date') ? $('checkin-date').value : dateKey(new Date()); checkins[date] = { points: dailyPoints(date) }; persist(); closeCheckin(); renderHomeSummary(); });
+      on('checkin-form','submit', (event) => { event.preventDefault(); const date = $('checkin-date') ? $('checkin-date').value : dateKey(new Date()); if (date !== dateKey(new Date())) { alert('只能签到当天，不可以补签或提前签。'); return; } checkins[date] = { points: dailyPoints(date) }; persist(); closeCheckin(); renderHomeSummary(); });
       on('close-checkin','click', closeCheckin);
       on('cancel-checkin','click', closeCheckin);
       on('checkin-modal','click', (event) => { if (event.target.id === 'checkin-modal') closeCheckin(); });
@@ -940,24 +1173,80 @@
       on('pomodoro-start','click', () => { if (pomodoroTimer) stopPomodoro(); else { if (pomodoro.seconds <= 0) pomodoro.seconds = (pomodoro.mode === 'work' ? pomodoro.work : pomodoro.break) * 60; pomodoroTimer = setInterval(tickPomodoro,1000); } renderPomodoro(); });
       on('pomodoro-reset','click', () => { stopPomodoro(); pomodoro.mode = 'work'; pomodoro.seconds = pomodoro.work * 60; persist(); renderPomodoro(); });
       ['work-minutes','break-minutes'].forEach((id) => { const el = $(id); if (!el) return; el.addEventListener('change', (event) => { const value = Math.max(1,Math.min(Number(event.target.value) || 1,id === 'work-minutes' ? 120 : 60)); if (id === 'work-minutes') pomodoro.work = value; else pomodoro.break = value; if (!pomodoroTimer) pomodoro.seconds = (pomodoro.mode === 'work' ? pomodoro.work : pomodoro.break) * 60; persist(); renderPomodoro(); }); });
-      /* ---- 双人空间 ---- */
+      /* ---- 双人空间（v3 · 气泡 + 三丽鸥皮肤） ---- */
       on('dual-new-post','click', () => { const f = $('dual-form'); openDualForm(!(f && f.classList.contains('open'))); });
       on('dual-cancel','click', () => { const form = $('dual-form'); if (form) form.classList.remove('open'); });
-      on('dual-image-input','change', async (event) => { const file = event.target.files && event.target.files[0]; const prev = $('dual-image-preview'); const img = $('dual-image-preview-img'); if (!file) { dualImageFile = null; if (prev) prev.style.display = 'none'; return; } dualImageFile = await compressImage(file); if (img) { const reader = new FileReader(); reader.onload = (e) => { img.src = e.target.result; if (prev) prev.style.display = 'block'; }; reader.readAsDataURL(dualImageFile); } });
-      on('dual-image-clear','click', () => { dualImageFile = null; const inp = $('dual-image-input'); if (inp) inp.value = ''; const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none'; });
-      on('dual-form','submit', async (event) => { event.preventDefault(); const text = $('dual-text') ? $('dual-text').value.trim() : ''; if (!text && !dualMoodSel && !dualStickerSel && !dualImageFile) return; const author = $('dual-author') ? $('dual-author').value : 'A'; dual.identity = author; const submitBtn = event.target.querySelector('button[type="submit"]'); if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '发送中…'; } let image_url = ''; if (dualImageFile) image_url = await uploadPostImage(dualImageFile); let post; const sb = ensureSupabase(); if (editingDualId) { const idx = dual.posts.findIndex((p) => p.id === editingDualId); if (idx >= 0) { const old = dual.posts[idx]; dual.posts[idx] = { ...old, author, text, mood: dualMoodSel, sticker: dualStickerSel, image_url: image_url || old.image_url }; } if (sb) sb.from('dual_posts').update({ author, text, mood: dualMoodSel, sticker: dualStickerSel, image_url: image_url || null }).eq('id', editingDualId).then(({ error }) => { if (error) console.warn('[恋学] 云端编辑失败', error); }); editingDualId = null; persistDual(); renderDual(); } else { post = { id: uid(), author, text, mood: dualMoodSel, sticker: dualStickerSel, image_url, ts: Date.now() }; await publishDualPost(post); } if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '发送'; } const form = $('dual-form'); if (form) form.classList.remove('open'); const t = $('dual-text'); if (t) t.value = ''; const inp = $('dual-image-input'); if (inp) inp.value = ''; const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none'; dualImageFile = null; dualMoodSel = ''; dualStickerSel = ''; });
+      on('dual-image-input','change', async (event) => {
+        const file = event.target.files && event.target.files[0];
+        const prev = $('dual-image-preview'); const img = $('dual-image-preview-img');
+        if (!file) { dualImageFile = null; if (prev) prev.style.display = 'none'; return; }
+        dualImageFile = await compressImage(file);
+        if (img) {
+          const reader = new FileReader();
+          reader.onload = (e) => { img.src = e.target.result; if (prev) prev.style.display = 'block'; };
+          reader.readAsDataURL(dualImageFile);
+        }
+      });
+      on('dual-image-clear','click', () => {
+        dualImageFile = null;
+        const inp = $('dual-image-input'); if (inp) inp.value = '';
+        const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none';
+      });
+      on('dual-form','submit', async (event) => {
+        event.preventDefault();
+        const text = $('dual-text') ? $('dual-text').value.trim() : '';
+        if (!text && !dualMoodSel && !dualStickerSel && !dualImageFile) return;
+        const author = dual.identity; // 已云端同步：无需再选择“这条是谁写的”
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '发送中…'; }
+        let image_url = '';
+        if (dualImageFile) image_url = await uploadPostImage(dualImageFile);
+        const sb = ensureSupabase();
+        if (editingDualId) {
+          const idx = dual.posts.findIndex((p) => p.id === editingDualId);
+          if (idx >= 0) {
+            const old = dual.posts[idx];
+            dual.posts[idx] = { ...old, text, mood: dualMoodSel, sticker: dualStickerSel, image_url: image_url || old.image_url };
+          }
+          if (sb) sb.from('dual_posts').update({ text, mood: dualMoodSel, sticker: dualStickerSel, image_url: image_url || null }).eq('id', editingDualId).then(({ error }) => { if (error) console.warn('[恋学] 云端编辑失败', error); });
+          editingDualId = null; persistDual(); renderDual();
+        } else {
+          const post = { id: uid(), author, text, mood: dualMoodSel, sticker: dualStickerSel, image_url, ts: Date.now() };
+          await publishDualPost(post);
+        }
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '发送 💌'; }
+        const form = $('dual-form'); if (form) form.classList.remove('open');
+        if ($('dual-text')) $('dual-text').value = '';
+        const inp = $('dual-image-input'); if (inp) inp.value = '';
+        const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none';
+        dualImageFile = null; dualMoodSel = ''; dualStickerSel = '';
+      });
       on('dual-list','click', (event) => {
-        const imgEl = event.target.closest('.dual-media img');
+        const imgEl = event.target.closest('.dual-bubble-media img');
         if (imgEl) { openImageViewer(imgEl.getAttribute('src')); return; }
-        const card = event.target.closest('.dual-card'); if (!card) return;
-        const post = dual.posts.find((p) => p.id === card.dataset.dualId); if (!post) return;
-        if (event.target.closest('.dual-delete')) { const sb = ensureSupabase(); if (sb) { sb.from('dual_posts').delete().eq('id', post.id).then(({ error }) => { if (error) console.warn('[恋学] 云端删除失败（仅本地删除）', error); }); if (post.image_url) { const path = post.image_url.split('/dual-images/')[1]; if (path) sb.storage.from('dual-images').remove([path]).catch(() => {}); } } dual.posts = dual.posts.filter((p) => p.id !== post.id); persistDual(); renderDual(); }
-        if (event.target.closest('.dual-edit')) { editingDualId = post.id; dualAuthor = post.author; dualMoodSel = post.mood; dualStickerSel = post.sticker; if ($('dual-author')) $('dual-author').value = post.author; if ($('dual-text')) $('dual-text').value = post.text; const form = $('dual-form'); if (form) form.classList.add('open'); renderDual(); const t = $('dual-text'); if (t) t.focus(); }
+        const row = event.target.closest('.dual-row'); if (!row) return;
+        const post = dual.posts.find((p) => p.id === row.dataset.dualId); if (!post) return;
+        if (event.target.closest('.dual-delete')) {
+          const sb = ensureSupabase();
+          if (sb) {
+            sb.from('dual_posts').delete().eq('id', post.id).then(({ error }) => { if (error) console.warn('[恋学] 云端删除失败（仅本地删除）', error); });
+            if (post.image_url) { const path = post.image_url.split('/dual-images/')[1]; if (path) sb.storage.from('dual-images').remove([path]).catch(() => {}); }
+          }
+          dual.posts = dual.posts.filter((p) => p.id !== post.id); persistDual(); renderDual();
+        }
+        if (event.target.closest('.dual-edit')) {
+          editingDualId = post.id; dualMoodSel = post.mood; dualStickerSel = post.sticker;
+          if ($('dual-text')) $('dual-text').value = post.text;
+          const form = $('dual-form'); if (form) form.classList.add('open');
+          renderDual(); const t = $('dual-text'); if (t) t.focus();
+        }
       });
       on('dual-mood-options','click', (event) => { const btn = event.target.closest('.mood-btn'); if (!btn) return; dualMoodSel = dualMoodSel === btn.dataset.mood ? '' : btn.dataset.mood; renderDual(); });
       on('dual-sticker-options','click', (event) => { const btn = event.target.closest('.sticker-btn'); if (!btn) return; dualStickerSel = dualStickerSel === btn.dataset.sticker ? '' : btn.dataset.sticker; renderDual(); });
-      on('dual-sync-url-toggle','click', () => { const panel = $('dual-sync-panel'); const input = $('dual-sync-url'); if (panel) panel.classList.toggle('hidden'); if (input) input.value = dual.syncUrl; });
-      on('dual-sync-close','click', () => { const input = $('dual-sync-url'); if (input) dual.syncUrl = input.value.trim(); persistDual(); if (dual.syncUrl) startDualSync(); else stopDualSync(); const panel = $('dual-sync-panel'); if (panel) panel.classList.add('hidden'); });
+      document.querySelector('.skin-selector').addEventListener('click', (event) => {
+        const btn = event.target.closest('.skin-btn'); if (!btn || !btn.dataset.skin) return;
+        dual.skin = btn.dataset.skin; persistDual(); renderDual();
+      });
       on('image-viewer-close','click', closeImageViewer);
       on('image-viewer','click', (event) => { if (event.target.id === 'image-viewer') closeImageViewer(); });
       /* ---- 错题本 ---- */
@@ -1013,7 +1302,7 @@
       window.addEventListener('resize', fitQuoteText);
       renderIntegral();
       [renderTasks, renderCerts, renderCalendar, renderCountdowns, renderPomodoro, renderMindMap, renderDual, renderMistakes, renderVocab, renderHomeSummary].forEach((fn) => { try { fn(); } catch (e) { console.error('[恋学] 初始化渲染失败：', fn.name, e); } });
-      setView('home'); startDualSync(); setInterval(renderCountdowns,1000);
+      setView('home'); setInterval(renderCountdowns,1000);
     })();
   </script>
   <script>
@@ -1023,4 +1312,3 @@
   </script>
 </body>
 </html>
-<!-- END v6.11 -->

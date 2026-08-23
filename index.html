@@ -13,12 +13,6 @@
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
   <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png" />
   <style>
-    /* =================================================================
-       恋学 v6.12 · 纯签到强化版
-       - 仅可签到当天（不可补签/提前签）
-       - 成就 UI：MC 像素风（解锁发绿光 + 右上角金色发光弹窗自动消失）
-       - 成就面板 z 指数高于签到面板
-       ================================================================= */
     :root {
       --bg:#04070e; --bg-2:#0a0d16;
       --glass-bg:rgba(20,25,45,.45); --glass-soft-bg:rgba(20,25,45,.38);
@@ -37,16 +31,13 @@
     body { margin:0; color:var(--text); background:var(--bg);
       font-family:"HarmonyOS Sans SC","MiSans",Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
       line-height:1.55; -webkit-font-smoothing:antialiased; }
-
     #fluid-canvas { position:fixed; inset:0; z-index:-6; display:block; width:100vw; height:100vh; pointer-events:none; }
     .bg-scanlines { position:fixed; inset:0; z-index:-5; pointer-events:none;
       background:repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0px, rgba(255,255,255,.04) 1px, transparent 1px, transparent 3px); }
     html.simple-mode #fluid-canvas, html.simple-mode .bg-scanlines { display:none !important; }
-
     ::selection { background:var(--accent); color:var(--accent-text); }
     button,input,textarea,select { font:inherit; }
     button { border:0; cursor:pointer; background:transparent; color:inherit; }
-
     .workspace-nav { position:fixed; top:14px; left:0; right:0; z-index:60; display:flex; align-items:center; justify-content:center; gap:2px; padding:0 12px; overflow-x:auto; overflow-y:hidden; scrollbar-width:none;
       background:transparent; visibility:hidden; opacity:0; transform:translateY(-10px);
       transition:opacity .45s ease, transform .45s ease, visibility .45s; }
@@ -57,7 +48,6 @@
     .tab:hover { color:#fff; }
     .tab.active { color:var(--accent); }
     .tab.active::after { content:""; position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:14px; height:2px; border-radius:2px; background:var(--accent); box-shadow:0 0 10px rgba(201,255,0,.6); }
-
     .hero { position:relative; display:flex; flex-direction:column; min-height:100vh; min-height:100dvh; overflow:hidden; }
     .hero-title { max-width:90vw; font-size:clamp(44px,12vw,120px); font-weight:900; letter-spacing:.06em; line-height:1.1; color:#fff; white-space:nowrap; }
     .hero-sub { max-width:560px; color:var(--muted); font-size:15px; line-height:1.8; }
@@ -65,10 +55,8 @@
     .scroll-hint { position:absolute; bottom:26px; left:50%; z-index:5; color:var(--faint); font-size:11px; letter-spacing:.3em; animation:hint-bob 2.4s ease-in-out infinite; }
     .scroll-hint button { color:inherit; font-weight:760; }
     @keyframes hint-bob { 0%,100% { transform:translate(-50%,0); } 50% { transform:translate(-50%,7px); } }
-
     .modules-hidden { opacity:0; transform:translateY(44px); pointer-events:none; }
     .modules-shown { opacity:1; transform:none; pointer-events:auto; transition:opacity .9s ease .1s, transform .9s cubic-bezier(.22,.9,.32,1) .1s; }
-
     .glass { background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:var(--r-lg); box-shadow:var(--shadow); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); }
     .glass-soft { background:var(--glass-soft-bg); border:1px solid var(--glass-border); border-radius:var(--r-md); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); }
     .lift { transition:transform .25s cubic-bezier(.22,.9,.32,1),box-shadow .25s ease,border-color .25s ease; }
@@ -77,7 +65,6 @@
     button,input,textarea,select { transition:.2s ease; }
     input:focus,textarea:focus,select:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); outline:none; }
     .btn:disabled { opacity:.45; cursor:not-allowed; } .btn:disabled:active { transform:none; }
-
     .topbar { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin:0 auto 26px; max-width:820px; padding:0 4px; }
     .topbar > div:first-child { min-width:0; flex:1; }
     .eyebrow { margin:0 0 6px; color:var(--accent); font-size:10px; font-weight:850; letter-spacing:.34em; text-transform:uppercase; }
@@ -89,7 +76,6 @@
     .icon-btn { display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:12px; color:var(--muted); }
     .quote-refresh { flex:none; width:36px; height:36px; border-radius:12px; color:var(--muted); font-size:15px; background:var(--glass-soft-bg); border:1px solid var(--glass-border); }
     .icon-btn:focus-visible,.btn:focus-visible,.input:focus-visible,.tab:focus-visible,.filter-btn:focus-visible,.mm-node:focus-visible { outline:3px solid var(--accent-soft); outline-offset:2px; }
-
     .settings-fab { position:fixed; top:12px; right:14px; z-index:70; width:44px; height:44px; border-radius:50%; color:#fff; font-size:17px;
       background:rgba(20,25,45,.6); border:1px solid var(--glass-border); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); box-shadow:0 8px 24px rgba(0,0,0,.35); transition:.25s ease; }
     .settings-fab:hover { border-color:rgba(255,255,255,.3); box-shadow:0 10px 28px rgba(0,0,0,.4),0 0 16px rgba(140,180,255,.25); }
@@ -108,7 +94,6 @@
     .switch-track::after { content:""; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:.2s; }
     .switch input:checked + .switch-track { background:var(--accent); border-color:var(--accent); }
     .switch input:checked + .switch-track::after { transform:translateX(18px); background:var(--accent-text); }
-
     .home-view { animation:view-enter .5s cubic-bezier(.22,.9,.32,1) both; }
     .home-badges { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:14px; }
     .home-badge { padding:16px 10px; text-align:center; background:rgba(255,255,255,.03); border:1px solid var(--glass-border); border-radius:var(--r-md); }
@@ -119,7 +104,6 @@
     .home-quick-icon { display:block; margin-bottom:10px; color:var(--accent); font-size:20px; }
     .home-quick-label { display:block; color:#fff; font-size:13.5px; font-weight:900; letter-spacing:-.01em; }
     .home-quick-sub { display:block; margin-top:3px; color:var(--faint); font-size:9.5px; font-weight:760; letter-spacing:.1em; text-transform:uppercase; }
-
     .panel { padding:22px; }
     .workspace-section.view-enter { animation:view-enter .5s cubic-bezier(.22,.9,.32,1) both; }
     @keyframes view-enter { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
@@ -133,7 +117,6 @@
     .stat-label { margin:0; color:var(--faint); font-size:10px; font-weight:820; letter-spacing:.14em; text-transform:uppercase; }
     .stat-value { margin:6px 0 0; font-size:26px; letter-spacing:-.04em; color:#fff; font-weight:900; text-shadow:0 0 14px rgba(201,255,0,.22); }
     .stat-sub { margin:4px 0 0; color:var(--faint); font-size:11px; }
-
     .toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
     .search-wrap { position:relative; flex:1; min-width:200px; }
     .search-wrap span { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--faint); pointer-events:none; }
@@ -162,7 +145,6 @@
     .filter-btn.active { color:var(--accent); background:var(--accent-soft); box-shadow:inset 0 -2px 0 var(--accent); }
     .meta-actions { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; }
     .link-btn { padding:0; color:var(--accent); font-size:12px; font-weight:850; }
-
     .task-list { margin:12px 0 0; padding:0; list-style:none; }
     .task-card { position:relative; display:flex; align-items:flex-start; gap:12px; max-height:260px; padding:15px 4px 15px 14px; border-bottom:1px solid var(--glass-border); cursor:grab; transition:transform .3s cubic-bezier(.22,.9,.32,1),opacity .3s ease,max-height .36s cubic-bezier(.22,.9,.32,1),padding .36s cubic-bezier(.22,.9,.32,1); will-change:transform; }
     .task-card.task-enter { animation:task-enter .5s cubic-bezier(.22,.9,.32,1) both; }
@@ -202,7 +184,6 @@
     .empty-icon { display:flex; align-items:center; justify-content:center; width:56px; height:56px; margin:0 auto 15px; border-radius:var(--r-md); color:var(--accent); background:var(--accent-soft); font-size:24px; }
     .empty-state p { margin:0; } .empty-state p + p { margin-top:6px; color:var(--muted); font-size:13px; }
     .backup-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; padding-top:15px; border-top:1px solid var(--glass-border); }
-
     .cert-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
     .cert-card { display:flex; flex-direction:column; gap:10px; padding:16px; }
     .cert-card.done { opacity:.7; }
@@ -218,7 +199,6 @@
     .cert-link a:hover { border-color:var(--accent); }
     .custom-cert-form { display:none; margin-bottom:14px; padding:16px; }
     .custom-cert-form.open { display:block; }
-
     .calendar-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
     .calendar-month { margin:0; font-size:16px; color:#fff; font-weight:880; }
     .calendar-actions { display:flex; gap:5px; }
@@ -231,7 +211,6 @@
     .day-cell.checked { box-shadow:inset 0 -3px 0 var(--accent); }
     .day-cell.selected { outline:2px solid var(--accent); outline-offset:-1px; }
     .day-number { font-size:12px; font-weight:820; }
-
     .countdown-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
     .countdown-card { position:relative; padding:17px; }
     .countdown-card.expired { border-color:color-mix(in srgb,var(--danger) 50%,var(--glass-border)); }
@@ -241,7 +220,6 @@
     .countdown-time strong { font-size:28px; letter-spacing:-.05em; color:#fff; }
     .countdown-time span { color:var(--muted); font-size:11px; }
     .countdown-footer { display:flex; justify-content:flex-end; gap:4px; }
-
     .pomodoro-layout { display:grid; grid-template-columns:minmax(230px,.9fr) minmax(0,1.1fr); gap:28px; align-items:center; }
     .pomodoro-ring { --progress:0deg; display:grid; place-items:center; width:min(260px,70vw); aspect-ratio:1; margin:auto; border-radius:50%; background:conic-gradient(var(--accent) var(--progress),rgba(255,255,255,.12) 0); box-shadow:0 0 40px rgba(201,255,0,.1); }
     .pomodoro-ring::after { content:""; grid-area:1/1; width:calc(100% - 16px); aspect-ratio:1; border-radius:50%; background:#0a0f1c; border:1px solid var(--glass-border); }
@@ -251,14 +229,12 @@
     .pomodoro-controls { display:flex; justify-content:center; gap:9px; margin-top:17px; }
     .pomodoro-settings { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .pomodoro-stat { margin:16px 0 0; color:var(--muted); font-size:13px; text-align:center; }
-
     .mood-options { display:flex; gap:7px; flex-wrap:wrap; }
     .mood-btn { width:38px; height:38px; border:1px solid var(--glass-border); border-radius:var(--r-sm); background:rgba(255,255,255,.06); font-size:18px; }
     .mood-btn.selected { border-color:var(--accent); background:var(--accent-soft); transform:scale(1.08); }
     .sticker-options { display:flex; gap:6px; flex-wrap:wrap; }
     .sticker-btn { width:40px; height:40px; border:1px solid var(--glass-border); border-radius:var(--r-sm); background:rgba(255,255,255,.06); font-size:19px; }
     .sticker-btn.selected { border-color:var(--accent); background:var(--accent-soft); transform:scale(1.08); }
-
     .modal { position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:18px; background:rgba(2,4,10,.6); backdrop-filter:blur(8px); }
     .modal.hidden { display:none; }
     .modal-card { width:min(620px,100%); max-height:92vh; overflow:auto; padding:20px; background:rgba(20,25,45,.82); border:1px solid var(--glass-border); border-radius:var(--r-lg); box-shadow:0 24px 70px rgba(0,0,0,.5); backdrop-filter:var(--glass-blur); animation:modal-in .3s cubic-bezier(.22,.9,.32,1); }
@@ -268,12 +244,9 @@
     .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
     .modal-title { margin:0; font-size:18px; color:#fff; font-weight:900; }
     .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:17px; }
-
     .integral-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 12px; padding:10px 12px; border-radius:var(--r-md); background:rgba(255,255,255,.04); border:1px solid var(--glass-border); }
     .integral-label { color:var(--faint); font-size:10.5px; font-weight:820; letter-spacing:.12em; }
     .integral-num { color:var(--accent); font-size:18px; font-weight:900; text-shadow:0 0 12px rgba(201,255,0,.3); }
-
-    /* ===== 成就 · 我的世界像素风 ===== */
     #achv-modal { z-index:130; }
     .mc-achv-card { width:min(680px,94vw); background:linear-gradient(rgba(34,38,30,.96),rgba(16,18,14,.98)); border:4px solid #1d201a; outline:2px solid #3a3f35; border-radius:0; }
     .mc-title { font-size:16px; font-weight:900; letter-spacing:.1em; color:#ffd25a; text-shadow:2px 2px 0 #4a3a00; text-transform:uppercase; border-bottom:4px solid #3a3f35; padding:8px 10px; background:#22251d; margin:0; font-family:"Courier New",monospace; }
@@ -289,8 +262,6 @@
     .mc-slot.unlocked .mc-slot-state { color:#55ff55; }
     .mc-progress { margin:0 12px 12px; padding:8px 10px; border:2px solid #3a3f35; background:#1c1f17; color:#c9c4a8; font-family:"Courier New",monospace; font-size:11px; border-radius:0; }
     @media (max-width:560px) { .mc-grid { grid-template-columns:repeat(2,1fr); } }
-
-    /* ===== 成就解锁 · 右上角弹窗（金色发光后自动消失） ===== */
     #achv-toast-wrap { position:fixed; top:18px; right:18px; z-index:160; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
     .achv-toast { display:flex; align-items:center; gap:10px; padding:10px 14px; background:#22251d; border:3px solid #3a3f35; border-radius:0; color:#fff; box-shadow:4px 4px 0 #0b0c09; opacity:0; transform:translateX(30px); transition:.3s ease; }
     .achv-toast.show { opacity:1; transform:none; }
@@ -303,24 +274,6 @@
       50% { box-shadow:4px 4px 0 #0b0c09, 0 0 16px 3px rgba(255,210,90,.7), 0 0 30px 6px rgba(255,210,90,.3); }
     }
     .achv-toast.out { opacity:0; transform:translateX(30px); transition:.4s ease; }
-
-    .dual-stats { margin-top:4px; }
-    .dual-list { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
-    .dual-card { padding:15px 17px; border-left:4px solid var(--accent); }
-    .dual-card.dual-B { border-left-color:#ff9ef5; }
-    .dual-head { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .dual-author { display:inline-flex; align-items:center; min-height:24px; padding:0 10px; border-radius:var(--r-sm); color:var(--accent); background:var(--accent-soft); font-size:10.5px; font-weight:850; letter-spacing:.06em; text-transform:uppercase; }
-    .dual-card.dual-B .dual-author { color:#ff9ef5; background:rgba(255,158,245,.12); }
-    .dual-time { color:var(--faint); font-size:11px; }
-    .dual-actions { margin-left:auto; display:flex; gap:2px; }
-    .dual-body { display:flex; align-items:flex-start; gap:8px; margin-top:9px; flex-wrap:wrap; }
-    .dual-emoji { font-size:26px; flex:none; line-height:1; }
-    .dual-text { margin:0; flex:1 1 100%; font-size:14px; line-height:1.65; overflow-wrap:anywhere; white-space:pre-wrap; color:#fff; }
-    .dual-media { margin-top:10px; }
-    .dual-media img { display:block; max-width:100%; max-height:300px; border-radius:12px; border:1px solid var(--glass-border); object-fit:cover; cursor:zoom-in; }
-    .dual-sync { margin-top:14px; padding:15px; }
-    .dual-sync .field { margin-bottom:10px; }
-
     .item-list { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
     .item-card { padding:15px 17px; }
     .item-head { display:flex; align-items:flex-start; gap:8px; flex-wrap:wrap; }
@@ -334,7 +287,6 @@
     .vocab-new { color:var(--medium); background:rgba(240,181,58,.14); border-color:transparent; }
     .vocab-learning { color:var(--accent); background:var(--accent-soft); border-color:transparent; }
     .vocab-mastered { color:var(--low); background:rgba(69,214,168,.14); border-color:transparent; }
-
     .mm-toolbar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:0 0 12px; padding:8px; background:rgba(255,255,255,.04); border-radius:var(--r-md); }
     .mm-toolbar.hidden { display:none !important; }
     .mm-selected-label { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:11px; text-align:right; }
@@ -349,163 +301,134 @@
     .mm-node-text { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .mm-node-count { flex:none; min-width:19px; height:19px; padding:0 5px; border-radius:10px; color:var(--accent-text); background:var(--accent); font-size:10px; font-weight:850; display:inline-flex; align-items:center; justify-content:center; }
     .mm-inline-input { width:100%; min-width:70px; border:1px solid var(--accent); border-radius:var(--r-sm); padding:4px 8px; font:inherit; font-size:12.5px; color:#fff; background:#0a0f1c; }
-
     .app-shell { position:relative; width:100%; max-width:1080px; min-height:100vh; margin:0 auto; padding:16px 18px 56px; }
     .footer-note { margin:18px 0 0; color:var(--faint); font-size:11.5px; line-height:1.6; opacity:.96; }
-
-    /* ===== 内联工具类 ===== */
     .relative{position:relative}.z-10{z-index:10}
     .flex{display:flex}.flex-1{flex:1 1 0%}.flex-col{flex-direction:column}
     .flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-center{justify-content:center}
     .px-6{padding-left:1.5rem;padding-right:1.5rem}.pt-12{padding-top:3rem}
     .mt-6{margin-top:1.5rem}.mt-10{margin-top:2.5rem}.mb-6{margin-bottom:1.5rem}
     .text-center{text-align:center}.gap-4{gap:1rem}
-
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }
     .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
     .hidden { display:none !important; }
-
     @media (min-width:640px) { .app-shell { padding:42px 28px 56px; } .panel { padding:24px; } }
     @media (max-width:700px) { .workspace-nav { justify-content:flex-start; } .stats { gap:8px; } .stat-card { padding:12px 10px; } .stat-value { font-size:22px; } .cert-grid,.countdown-grid { grid-template-columns:1fr; } .pomodoro-layout { grid-template-columns:1fr; } .home-quick,.home-badges { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (max-width:560px) { .topbar { margin-bottom:18px; } .workspace-nav { padding:0 10px; } .tab { font-size:10.5px; padding:7px 4px; letter-spacing:.1em; } .workspace-nav .tab:not(:first-child)::before { margin-right:6px; } .settings-fab { top:auto; bottom:16px; right:16px; } .settings-drawer { top:auto; bottom:72px; right:16px; } .toolbar { align-items:stretch; } .search-wrap { min-width:100%; } .toolbar > .btn { flex:1; } .field-grid { grid-template-columns:1fr; } .field.full { grid-column:auto; } .filter-row { align-items:stretch; } .filters { width:100%; } .filter-btn { flex:1; } .meta-actions { justify-content:space-between; } .task-card { padding-left:12px; } .task-actions { flex-direction:column; } .mini-btn { width:34px; height:30px; } .day-cell { min-height:40px; padding:5px 3px; } .panel-head { align-items:stretch; flex-direction:column; } .panel-head > .btn { align-self:flex-start; } .mm-selected-label { width:100%; text-align:left; } .mm-toolbar > .btn { flex:1 0 auto; } .dual-actions,.item-actions { margin-left:0; } }
-
-    /* ================================================================
-       双人空间 v2 · 可爱风浅蓝 + 三丽鸥风格气泡皮肤
-       （`#dual-view` id 特异性更高，自动覆盖旧样式）
-       ================================================================ */
-    #dual-view .glass.panel {
-      background: linear-gradient(180deg, #f0f9ff 0%, #e3f0fb 100%);
-      border: 2px solid #cfe8ff;
-      box-shadow: 0 14px 34px rgba(120, 180, 235, .22);
-    }
-    #dual-view .panel-kicker { color: #7fb1e8; }
-    #dual-view .panel-title { color: #4d7bbf; }
-    #dual-view .panel-copy { color: #7d95b8; }
-    #dual-view .btn-primary { background: #7cc4ff; color: #fff; box-shadow: 0 8px 20px rgba(124,196,255,.35); }
-    #dual-view .btn-primary:hover { background: #5fb4ff; }
-    #dual-view .btn.glass-soft { background: #fff; border-color: #d7e9fa; color: #5b8ec9; }
-    #dual-view .input { background: #fff; border-color: #d7e9fa; color: #4a6d99; }
-    #dual-view .input::placeholder { color: #9db8d8; }
-    #dual-view .field label { color: #6d93c4; }
-    #dual-view form.composer, #dual-view #dual-form { background: rgba(255,255,255,.9); border-color: #d7e9fa; }
-    #dual-view .mood-btn, #dual-view .sticker-btn { background: #fff; border-color: #d7e9fa; color: #4a6d99; }
-    #dual-view .mood-btn.selected, #dual-view .sticker-btn.selected { border-color: #7cc4ff; background: #eaf6ff; transform: scale(1.1); }
-    #dual-view .stat-card { background: #fff; border: 1px solid #d7e9fa; }
-    #dual-view .stat-label { color: #8fb2d8; }
-    #dual-view .stat-value { color: #4d7bbf; text-shadow: none; }
-    #dual-view .stat-sub { color: #9db8d8; }
-    #dual-view .empty-icon { background: #e3f2ff; color: #7cc4ff; }
-    #dual-view .empty-state p { color: #7d95b8; }
-
-    /* 皮肤切换条 */
+    /* ==== 双人空间 v2 · 浅蓝可爱风 ==== */
+    #dual-view .glass.panel { background:linear-gradient(180deg,#f0f9ff 0%,#e3f0fb 100%); border:2px solid #cfe8ff; box-shadow:0 14px 34px rgba(120,180,235,.22); }
+    #dual-view .panel-kicker { color:#7fb1e8; }
+    #dual-view .panel-title { color:#4d7bbf; }
+    #dual-view .panel-copy { color:#7d95b8; }
+    #dual-view .btn-primary { background:#7cc4ff; color:#fff; box-shadow:0 8px 20px rgba(124,196,255,.35); }
+    #dual-view .btn-primary:hover { background:#5fb4ff; }
+    #dual-view .btn.glass-soft { background:#fff; border-color:#d7e9fa; color:#5b8ec9; }
+    #dual-view .input { background:#fff; border-color:#d7e9fa; color:#4a6d99; }
+    #dual-view .input::placeholder { color:#9db8d8; }
+    #dual-view .field label { color:#6d93c4; }
+    #dual-view form.composer, #dual-view #dual-form { background:rgba(255,255,255,.9); border-color:#d7e9fa; }
+    #dual-view .mood-btn, #dual-view .sticker-btn { background:#fff; border-color:#d7e9fa; color:#4a6d99; }
+    #dual-view .mood-btn.selected, #dual-view .sticker-btn.selected { border-color:#7cc4ff; background:#eaf6ff; transform:scale(1.1); }
+    #dual-view .stat-card { background:#fff; border:1px solid #d7e9fa; }
+    #dual-view .stat-label { color:#8fb2d8; }
+    #dual-view .stat-value { color:#4d7bbf; text-shadow:none; }
+    #dual-view .stat-sub { color:#9db8d8; }
+    #dual-view .empty-icon { background:#e3f2ff; color:#7cc4ff; }
+    #dual-view .empty-state p { color:#7d95b8; }
     .skin-selector { display:flex; align-items:center; gap:8px; margin:0 0 14px; padding:10px 12px; border-radius:18px; background:rgba(255,255,255,.75); border:1px solid #d7e9fa; }
     .skin-selector-label { margin:0; color:#7d95b8; font-size:11px; font-weight:850; letter-spacing:.12em; }
     .skin-btn { display:inline-flex; align-items:center; gap:5px; min-height:36px; padding:0 12px; border-radius:999px; background:#fff; border:2px solid #d7e9fa; color:#6d93c4; font-size:12.5px; font-weight:820; transition:.2s ease; }
     .skin-btn:hover { transform:translateY(-1px); border-color:#9cc9f2; }
     .skin-btn.active { border-color:#7cc4ff; background:#eaf6ff; color:#3f7fc4; box-shadow:0 0 0 3px rgba(124,196,255,.18); }
     .skin-btn .skin-emoji { font-size:16px; }
-
-    /* ---------- 对话气泡 ---------- */
     .dual-list { display:flex; flex-direction:column; gap:14px; margin-top:16px; }
     .dual-row { display:flex; align-items:flex-end; gap:8px; animation:dual-in .45s cubic-bezier(.22,.9,.32,1) both; }
     .dual-row.right { flex-direction:row-reverse; }
     @keyframes dual-in { from { opacity:0; transform:translateY(12px) scale(.96); } to { opacity:1; transform:none; } }
-
     .dual-avatar { flex:none; display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:#fff; border:2px solid #cfe8ff; font-size:19px; box-shadow:0 4px 12px rgba(120,180,235,.18); }
-
-    .dual-bubble { position:relative; max-width:min(78%, 520px); padding:11px 14px 13px; border-radius:20px; background:var(--bubble-bg,#fff); border:2px solid var(--bubble-border,#cfe8ff); box-shadow:0 6px 16px rgba(120,180,235,.16); }
+    .dual-bubble { position:relative; max-width:min(78%,520px); padding:11px 14px 13px; border-radius:20px; background:var(--bubble-bg,#fff); border:2px solid var(--bubble-border,#cfe8ff); box-shadow:0 6px 16px rgba(120,180,235,.16); }
     .dual-bubble::after { content:""; position:absolute; bottom:18px; border:9px solid transparent; }
     .dual-row.left .dual-bubble::after { left:-11px; border-right-color:var(--bubble-bg,#fff); }
     .dual-row.right .dual-bubble::after { right:-11px; border-left-color:var(--bubble-bg,#fff); }
-
     .dual-bubble-head { display:flex; align-items:center; gap:6px; margin-top:6px; }
     .dual-bubble-who { font-size:10px; font-weight:850; letter-spacing:.08em; color:var(--who-color,#8fb2d8); }
     .dual-bubble-time { font-size:10px; color:#aabfd8; }
-
     .dual-bubble-text { margin:0; font-size:14px; line-height:1.65; overflow-wrap:anywhere; white-space:pre-wrap; color:#4a6d99; }
     .dual-bubble .dual-emoji { font-size:19px; line-height:1; }
     .dual-bubble-emoji-row { display:flex; gap:4px; margin-top:5px; }
-
     .dual-bubble-media { margin-bottom:8px; border-radius:16px; overflow:hidden; background:#f2f8ff; border:1px solid #d7e9fa; }
     .dual-bubble-media img { display:block; max-width:100%; max-height:280px; object-fit:cover; cursor:zoom-in; }
-
     .dual-bubble-actions { display:flex; gap:2px; position:absolute; top:-10px; right:-6px; opacity:0; transition:.2s ease; }
     .dual-row:hover .dual-bubble-actions { opacity:1; }
     .dual-bubble-actions .mini-btn { width:26px; height:26px; border-radius:10px; font-size:12px; background:#fff; border:1px solid #d7e9fa; color:#7d95b8; }
-
-    /* 皮肤配色：大耳狗（玉桂狗）Cinnamoroll */
+    /* 三丽鸥皮肤配色 */
     .skin-cinnamoroll .dual-bubble { --bubble-bg:#ffffff; --bubble-border:#cfe8ff; --who-color:#6fb3e8; }
     .skin-cinnamoroll .dual-row.right .dual-bubble { --bubble-bg:#dff0ff; --bubble-border:#b8dcff; }
     .skin-cinnamoroll .dual-avatar { background:#f4faff; border-color:#cfe8ff; }
-
-    /* 皮肤配色：库洛米 Kuromi */
     .skin-kuromi .dual-bubble { --bubble-bg:#fff4f8; --bubble-border:#ffcddd; --who-color:#f2769b; }
     .skin-kuromi .dual-row.right .dual-bubble { --bubble-bg:#ffd9e7; --bubble-border:#ffb7cf; }
     .skin-kuromi .dual-avatar { background:#fff4f8; border-color:#ffcddd; }
     .skin-kuromi .skin-btn.active { background:#fff0f5; border-color:#f2769b; box-shadow:0 0 0 3px rgba(242,118,155,.18); }
-
-    /* 皮肤配色：凯蒂猫 Hello Kitty */
     .skin-kitty .dual-bubble { --bubble-bg:#fff7f9; --bubble-border:#ffd4df; --who-color:#f79bb4; }
     .skin-kitty .dual-row.right .dual-bubble { --bubble-bg:#ffe3ea; --bubble-border:#ffc2d1; }
     .skin-kitty .dual-avatar { background:#fff7f9; border-color:#ffd4df; }
     .skin-kitty .skin-btn.active { background:#fff0f4; border-color:#f79bb4; box-shadow:0 0 0 3px rgba(247,155,180,.18); }
-
-    /* ================================================================
-       气泡角色装饰 v3 · 参考三丽鸥官网形象 CSS 手绘
-       ================================================================ */
+    /* v3 角色装饰：大耳狗双耳 / 库洛米骷髅角 / 凯蒂猫蝴蝶结 */
     .bubble-deco { position:absolute; z-index:1; pointer-events:none; }
-
-    /* 大耳狗（玉桂狗）：一对蓝色大垂耳 */
     .skin-cinnamoroll .bubble-deco { top:-8px; left:11px; width:28px; height:20px; }
-    .skin-cinnamoroll .bubble-deco::before,
-    .skin-cinnamoroll .bubble-deco::after {
-      content:""; position:absolute; top:0; width:13px; height:20px;
-      background:linear-gradient(180deg, #e7f6ff 0%, #8ed0ff 100%);
-      border:1.5px solid #6cb8ef;
-    }
+    .skin-cinnamoroll .bubble-deco::before, .skin-cinnamoroll .bubble-deco::after { content:""; position:absolute; top:0; width:13px; height:20px; background:linear-gradient(180deg,#e7f6ff 0%,#8ed0ff 100%); border:1.5px solid #6cb8ef; }
     .skin-cinnamoroll .bubble-deco::before { left:0; transform:rotate(-8deg); border-radius:60% 35% 50% 40%; }
-    .skin-cinnamoroll .bubble-deco::after  { right:0; transform:rotate(8deg);  border-radius:35% 60% 40% 50%; }
-
-    /* 库洛米：粉色骷髅脸 + 两只恶魔角 */
-    .skin-kuromi .bubble-deco { top:-13px; left:12px; width:16px; height:14px;
-      background:#ffc7dd; border:1.5px solid #f26b9d; border-radius:50%;
-      background-image:
-        radial-gradient(circle at 5px 5px, #4b3040 1.5px, transparent 2px),
-        radial-gradient(circle at 11px 5px, #4b3040 1.5px, transparent 2px),
-        radial-gradient(circle at 8px 9px, #f26b9d 1px, transparent 1.6px); }
-    .skin-kuromi .bubble-deco::before,
-    .skin-kuromi .bubble-deco::after {
-      content:""; position:absolute; top:-6px; width:9px; height:11px;
-      background:#ff7ba9; border-radius:50% 50% 0 0;
-    }
+    .skin-cinnamoroll .bubble-deco::after { right:0; transform:rotate(8deg); border-radius:35% 60% 40% 50%; }
+    .skin-kuromi .bubble-deco { top:-13px; left:12px; width:16px; height:14px; background:#ffc7dd; border:1.5px solid #f26b9d; border-radius:50%; background-image:radial-gradient(circle at 5px 5px,#4b3040 1.5px,transparent 2px),radial-gradient(circle at 11px 5px,#4b3040 1.5px,transparent 2px),radial-gradient(circle at 8px 9px,#f26b9d 1px,transparent 1.6px); }
+    .skin-kuromi .bubble-deco::before, .skin-kuromi .bubble-deco::after { content:""; position:absolute; top:-6px; width:9px; height:11px; background:#ff7ba9; border-radius:50% 50% 0 0; }
     .skin-kuromi .bubble-deco::before { left:1px; transform:rotate(-12deg); }
-    .skin-kuromi .bubble-deco::after  { right:1px; transform:rotate(12deg); }
-
-    /* 凯蒂猫：红色蝴蝶结（结心 + 双翼） */
-    .skin-kitty .bubble-deco { top:-11px; left:14px; width:9px; height:10px;
-      background:#ff1f56; border-radius:45%; z-index:1; }
-    .skin-kitty .bubble-deco::before,
-    .skin-kitty .bubble-deco::after {
-      content:""; position:absolute; top:-1px; width:13px; height:14px;
-      background:linear-gradient(180deg, #ff8da8 0%, #ff2e63 100%);
-      border-radius:4px;
-    }
+    .skin-kuromi .bubble-deco::after { right:1px; transform:rotate(12deg); }
+    .skin-kitty .bubble-deco { top:-11px; left:14px; width:9px; height:10px; background:#ff1f56; border-radius:45%; z-index:1; }
+    .skin-kitty .bubble-deco::before, .skin-kitty .bubble-deco::after { content:""; position:absolute; top:-1px; width:13px; height:14px; background:linear-gradient(180deg,#ff8da8 0%,#ff2e63 100%); border-radius:4px; }
     .skin-kitty .bubble-deco::before { left:-13px; transform:skewX(-14deg) rotate(8deg); }
-    .skin-kitty .bubble-deco::after  { right:-13px; transform:skewX(14deg) rotate(-8deg); }
-
+    .skin-kitty .bubble-deco::after { right:-13px; transform:skewX(14deg) rotate(-8deg); }
     @media (hover:none) { .dual-bubble-actions { opacity:1; } }
-    @media (max-width:560px) {
-      .dual-bubble { max-width:84%; }
-      .skin-selector { flex-wrap:wrap; }
-    }
+    @media (max-width:560px) { .dual-bubble { max-width:84%; } .skin-selector { flex-wrap:wrap; } }
+    /* ==== 生涯规划 · 待办模型 + 一键导入 ==== */
+    .career-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
+    .career-card { display:flex; flex-direction:column; gap:9px; padding:15px 16px; cursor:pointer; }
+    .career-card.selected { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft),0 14px 34px rgba(0,0,0,.34); }
+    .career-card-name { margin:0; font-size:16px; color:#fff; font-weight:850; }
+    .career-card-desc { margin:0; font-size:12px; color:var(--muted); line-height:1.55; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .career-progress { height:6px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; }
+    .career-progress > i { display:block; height:100%; border-radius:999px; background:var(--accent); box-shadow:0 0 10px rgba(201,255,0,.5); transition:width .35s ease; }
+    .career-card-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--faint); font-size:11px; }
+    .career-card-meta strong { color:var(--accent); font-weight:850; }
+    .career-detail { margin-top:4px; }
+    .career-detail-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .career-detail-title { margin:0; font-size:19px; color:#fff; font-weight:900; letter-spacing:-.03em; }
+    .career-detail-desc { margin:6px 0 0; color:var(--muted); font-size:12.5px; line-height:1.6; white-space:pre-wrap; }
+    .career-detail-stats { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; padding:10px 12px; border-radius:var(--r-md); background:rgba(255,255,255,.04); border:1px solid var(--glass-border); color:var(--faint); font-size:11.5px; }
+    .career-detail-stats strong { color:var(--accent); font-weight:850; }
+    .career-steps { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+    .career-step-group { margin:10px 0 4px; color:var(--faint); font-size:10px; font-weight:850; letter-spacing:.14em; text-transform:uppercase; }
+    .career-step { display:flex; align-items:flex-start; gap:10px; padding:11px 13px; border-radius:var(--r-md); background:rgba(255,255,255,.03); border:1px solid var(--glass-border); transition:.2s ease; }
+    .career-step:hover { background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.2); }
+    .career-step.done { opacity:.62; }
+    .career-step-main { min-width:0; flex:1; }
+    .career-step-text { margin:0; font-size:13.5px; line-height:1.55; color:#fff; overflow-wrap:anywhere; }
+    .career-step.done .career-step-text { color:var(--faint); text-decoration:line-through; }
+    .career-step-note { margin:4px 0 0; color:var(--muted); font-size:11.5px; line-height:1.5; overflow-wrap:anywhere; white-space:pre-wrap; }
+    .career-step-meta { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+    .career-step-actions { display:flex; align-items:center; gap:2px; flex:none; }
+    .career-step-actions .mini-btn { width:27px; height:27px; border-radius:9px; font-size:12px; }
+    .career-import-panel { display:none; margin-bottom:16px; padding:16px; }
+    .career-import-panel.open { display:block; }
+    .career-import-hint { margin:0 0 10px; color:var(--muted); font-size:11.5px; line-height:1.7; }
+    .career-import-hint code { padding:1px 5px; border-radius:6px; background:rgba(255,255,255,.08); color:var(--accent); font-size:10.5px; }
+    @media (max-width:700px) { .career-grid { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
-  <!-- 背景 -->
   <canvas id="fluid-canvas" aria-hidden="true"></canvas>
   <div class="bg-scanlines" aria-hidden="true"></div>
 
-  <nav class="workspace-nav" aria-label="工作区切换"><button class="tab active" data-view="home" type="button">首页</button><button class="tab" data-view="tasks" type="button">学习任务</button><button class="tab" data-view="mindmap" type="button">思维脑图</button><button class="tab" data-view="mistakes" type="button">错题本</button><button class="tab" data-view="vocab" type="button">英语生词</button><button class="tab" data-view="certs" type="button">证书备考</button><button class="tab" data-view="countdowns" type="button">备考倒计时</button><button class="tab" data-view="pomodoro" type="button">番茄专注</button><button class="tab" data-view="dual" type="button">双人空间</button></nav>
+  <nav class="workspace-nav" aria-label="工作区切换"><button class="tab active" data-view="home" type="button">首页</button><button class="tab" data-view="tasks" type="button">学习任务</button><button class="tab" data-view="mindmap" type="button">思维脑图</button><button class="tab" data-view="mistakes" type="button">错题本</button><button class="tab" data-view="vocab" type="button">英语生词</button><button class="tab" data-view="certs" type="button">证书备考</button><button class="tab" data-view="countdowns" type="button">备考倒计时</button><button class="tab" data-view="pomodoro" type="button">番茄专注</button><button class="tab" data-view="careers" type="button">生涯规划</button><button class="tab" data-view="dual" type="button">双人空间</button></nav>
 
   <button id="bg-settings-btn" class="settings-fab" type="button" aria-label="界面设置" title="界面设置">⚙</button>
   <div id="bg-settings-panel" class="settings-drawer hidden" role="dialog" aria-label="界面设置">
@@ -702,20 +625,73 @@
         </div>
       </section>
 
+      <section id="careers-view" class="workspace-section hidden">
+        <div class="glass panel">
+          <div class="panel-head">
+            <div><p class="panel-kicker">CAREER</p><h2 class="panel-title">生涯规划</h2><p class="panel-copy">用待办模型管理长远目标：阶段分组、行动步骤、截止日期、完成进度，支持一键导入你已有的规划。</p></div>
+            <div class="panel-actions"><button id="career-import-toggle" class="btn btn-primary lift" type="button">📥 一键导入</button><button id="career-new-toggle" class="btn glass-soft lift" type="button">+ 新建规划</button></div>
+          </div>
+          <form id="career-form" class="glass-soft composer">
+            <div class="field-grid">
+              <div class="field full"><label for="career-title-input">规划名称</label><input id="career-title-input" class="input" maxlength="60" required placeholder="例如：大学四年生涯规划" /></div>
+              <div class="field full"><label for="career-desc-input">总目标描述（可选）</label><textarea id="career-desc-input" class="input" maxlength="400" placeholder="概述你的远期方向 / 愿景…"></textarea></div>
+            </div>
+            <div class="composer-actions"><button id="career-cancel" class="btn btn-quiet" type="button">取消</button><button class="btn btn-primary" type="submit">保存规划</button></div>
+          </form>
+          <div id="career-import-panel" class="glass-soft career-import-panel">
+            <p class="panel-kicker" style="margin-top:0">一键导入 · 格式说明</p>
+            <p class="career-import-hint">
+              第一行自动识别为<b>规划名称</b>；<code>## 阶段名</code> 开启阶段分组；
+              每条行动一行，可用 <code>- 步骤</code> 开头；行内可带 <code>2025-01-01 步骤</code> 作为截止日期；
+              用 <code>|</code> 分隔备注，如 <code>- 通过四级考试 | 每天背 50 词</code>。<br />
+              也可直接选择 JSON 文件（规划数组或备份中的 <code>careers</code> 字段）导入。
+            </p>
+            <div class="field"><label for="career-import-text">粘贴你的规划文本</label><textarea id="career-import-text" class="input" rows="8" placeholder="大学四年规划&#10;## 大一&#10;- 通过英语四级 | 每天背 50 词&#10;2025-06-15 完成高数基础&#10;## 大二&#10;- 考取计算机二级"></textarea></div>
+            <div class="composer-actions" style="gap:8px">
+              <button id="career-import-file-btn" class="btn glass-soft" type="button">加载 JSON 文件</button>
+              <input id="career-import-file" type="file" accept="application/json,.json" class="hidden" />
+              <button id="career-import-close" class="btn btn-quiet" type="button">取消</button>
+              <button id="career-import-apply" class="btn btn-primary" type="button">导入规划</button>
+            </div>
+          </div>
+          <div id="career-list" class="career-grid"></div>
+          <div id="career-empty" class="empty-state hidden"><div class="glass-soft empty-icon">🧭</div><p class="panel-title" style="font-size:16px">还没有生涯规划</p><p>新建一份规划，或点击「一键导入」粘贴你已有的规划文本。</p></div>
+          <div id="career-detail" class="career-detail hidden">
+            <div class="glass-soft" style="padding:16px;margin-bottom:14px">
+              <div class="career-detail-head">
+                <div><h3 id="career-detail-title" class="career-detail-title"></h3><p id="career-detail-desc" class="career-detail-desc"></p></div>
+                <div class="panel-actions"><button id="career-edit" class="btn glass-soft" type="button" style="min-height:36px;padding:0 12px;font-size:12px">✎ 编辑</button><button id="career-delete" class="btn btn-danger" type="button" style="min-height:36px;padding:0 12px;font-size:12px">删除</button></div>
+              </div>
+              <div id="career-detail-stats" class="career-detail-stats"></div>
+              <div class="career-progress"><i id="career-detail-progress" style="width:0%"></i></div>
+            </div>
+            <div class="filter-row" style="padding-top:10px"><div class="meta-actions"><span id="career-step-count">0 / 0 步骤</span></div><button id="career-step-toggle" class="btn btn-primary lift" type="button" style="min-height:38px">+ 添加步骤</button></div>
+            <form id="career-step-form" class="glass-soft composer" style="margin-top:10px">
+              <div class="field-grid">
+                <div class="field full"><label for="career-step-text-input">步骤内容</label><input id="career-step-text-input" class="input" maxlength="200" required placeholder="例如：完成英语六级备考第一阶段" /></div>
+                <div class="field"><label for="career-step-group-input">所属阶段（可选）</label><input id="career-step-group-input" class="input" maxlength="40" placeholder="例如：短期目标" /></div>
+                <div class="field"><label for="career-step-due-input">截止日期（可选）</label><input id="career-step-due-input" class="input" type="date" /></div>
+                <div class="field full"><label for="career-step-note-input">备注（可选）</label><input id="career-step-note-input" class="input" maxlength="200" placeholder="行动要点 / 资源 / 注意事项" /></div>
+              </div>
+              <div class="composer-actions"><button id="career-step-cancel" class="btn btn-quiet" type="button">取消</button><button class="btn btn-primary" type="submit">保存步骤</button></div>
+            </form>
+            <div id="career-steps" class="career-steps"></div>
+          </div>
+        </div>
+      </section>
+
       <section id="dual-view" class="workspace-section hidden">
         <div class="glass panel">
           <div class="panel-head">
             <div><p class="panel-kicker">DUAL SPACE · 💙</p><h2 class="panel-title">双人空间</h2><p class="panel-copy">你们的小信箱：留言、照片、心情都云端实时同步到对方，点照片可放大。</p></div>
             <div class="panel-actions"><button id="dual-new-post" class="btn btn-primary lift" type="button">💌 写一条</button></div>
           </div>
-
           <div class="skin-selector" role="group" aria-label="气泡皮肤">
             <span class="skin-selector-label">气泡皮肤</span>
             <button class="skin-btn" data-skin="cinnamoroll" type="button" title="玉桂狗"><span class="skin-emoji">🐶</span>玉桂狗</button>
             <button class="skin-btn" data-skin="kuromi" type="button" title="库洛米"><span class="skin-emoji">🎀</span>库洛米</button>
             <button class="skin-btn" data-skin="kitty" type="button" title="凯蒂猫"><span class="skin-emoji">🐱</span>凯蒂猫</button>
           </div>
-
           <form id="dual-form" class="glass-soft composer">
             <div class="field-grid">
               <div class="field full"><label for="dual-text">今日留言</label><textarea id="dual-text" class="input" maxlength="500" placeholder="今天过得怎么样？告诉 TA…"></textarea></div>
@@ -729,14 +705,12 @@
             </div>
             <div class="composer-actions"><button id="dual-cancel" class="btn btn-quiet" type="button">取消</button><button class="btn btn-primary" type="submit">发送 💌</button></div>
           </form>
-
           <div class="stats dual-stats">
             <article class="glass lift stat-card"><p class="stat-label">留言总数</p><p id="dual-count" class="stat-value">0</p><p class="stat-sub">收藏的小对话</p></article>
             <article class="glass lift stat-card"><p class="stat-label">我的留言</p><p id="dual-count-a" class="stat-value">0</p><p class="stat-sub">我写下的</p></article>
             <article class="glass lift stat-card"><p class="stat-label">TA 的留言</p><p id="dual-count-b" class="stat-value">0</p><p class="stat-sub">TA 写下的</p></article>
             <article class="glass lift stat-card"><p class="stat-label">今日记录</p><p id="dual-today" class="stat-value">0</p><p class="stat-sub">今天的日常</p></article>
           </div>
-
           <div id="dual-list" class="dual-list"></div>
           <div id="dual-empty" class="empty-state hidden"><div class="glass-soft empty-icon">💌</div><p class="panel-title" style="font-size:16px">还没有日常记录</p><p>写下今天的小事，或传一张照片给 TA。</p></div>
         </div>
@@ -746,10 +720,8 @@
     </main>
   </div>
 
-  <!-- 成就解锁弹窗容器（右上角） -->
   <div id="achv-toast-wrap"></div>
 
-  <!-- ======= 图片大图查看 ======= -->
   <div id="image-viewer" class="modal hidden" role="dialog" aria-modal="true" aria-label="图片查看">
     <div class="modal-card" style="max-width:min(880px,94vw);padding:14px;background:rgba(10,13,22,.92)">
       <img id="image-viewer-img" alt="大图" style="display:block;max-width:100%;max-height:78vh;border-radius:12px;margin:auto" />
@@ -757,7 +729,6 @@
     </div>
   </div>
 
-  <!-- ======= 成就 · MC 像素面板（z 指数高于签到面板） ======= -->
   <div id="achv-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="成就">
     <div class="modal-card mc-achv-card">
       <div class="modal-head"><h3 class="mc-title">⚔ ACHIEVEMENTS</h3><button id="achv-close" type="button" class="icon-btn" aria-label="关闭">×</button></div>
@@ -766,7 +737,6 @@
     </div>
   </div>
 
-  <!-- ======= 登录弹窗 ======= -->
   <div id="auth-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
     <form id="auth-form" class="modal-card">
       <div class="modal-head"><h2 id="auth-title" class="modal-title">登录</h2><button id="auth-close" type="button" class="icon-btn" aria-label="关闭">×</button></div>
@@ -781,7 +751,6 @@
     </form>
   </div>
 
-  <!-- ======= 今日签到弹窗（仅当天可签） ======= -->
   <div id="checkin-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="checkin-modal-title">
     <form id="checkin-form" class="modal-card">
       <div class="modal-head"><h2 id="checkin-modal-title" class="modal-title">今日签到</h2><button id="close-checkin" type="button" class="icon-btn" aria-label="关闭">×</button></div>
@@ -807,7 +776,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" async></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
-    /* ========[背景系统] Three.js 深蓝流体——就绪才启动，失败自动降级====== */
     (function () {
       var KEY = 'focus-list-bg-settings-v1';
       var canvas = document.getElementById('fluid-canvas');
@@ -867,11 +835,9 @@
     (() => {
       const $ = (id) => { const el = document.getElementById(id); if (!el) console.warn('[恋学] 页面缺少元素 #' + id); return el; };
       function on(id, evt, fn) { const el = document.getElementById(id); if (!el) { console.warn('[恋学] 跳过绑定：找不到 #' + id); return; } el.addEventListener(evt, fn); }
-      const TASK_KEY='focus-list-tasks-v1'; const CERT_KEY='focus-list-certs-v1'; const CHECKIN_KEY='focus-list-checkins-v1'; const COUNTDOWN_KEY='focus-list-countdowns-v1'; const POMO_KEY='focus-list-pomodoro-v1'; const MINDMAP_KEY='focus-list-mindmaps-v1'; const DUAL_KEY='focus-list-dual-v1'; const MISTAKE_KEY='focus-list-mistakes-v1'; const VOCAB_KEY='focus-list-vocab-v1'; const QUOTE_KEY='focus-list-quotes-v1'; const BG_SETTINGS_KEY='focus-list-bg-settings-v1'; const ACHV_TOAST_KEY='focus-list-achv-toasted-v1';
+      const TASK_KEY='focus-list-tasks-v1'; const CERT_KEY='focus-list-certs-v1'; const CHECKIN_KEY='focus-list-checkins-v1'; const COUNTDOWN_KEY='focus-list-countdowns-v1'; const POMO_KEY='focus-list-pomodoro-v1'; const MINDMAP_KEY='focus-list-mindmaps-v1'; const DUAL_KEY='focus-list-dual-v1'; const MISTAKE_KEY='focus-list-mistakes-v1'; const VOCAB_KEY='focus-list-vocab-v1'; const QUOTE_KEY='focus-list-quotes-v1'; const BG_SETTINGS_KEY='focus-list-bg-settings-v1'; const ACHV_TOAST_KEY='focus-list-achv-toasted-v1'; const CAREER_KEY='focus-list-careers-v1';
       function safeSet(key, val) { try { localStorage.setItem(key, val); } catch (e) { console.warn('[恋学] 存储写入失败，数据仅保留在内存', key); } }
       const CERT_URLS = { cet4:'https://www.ixuecheng.cn/home', cet6:'https://www.ixuecheng.cn/home', ncre2:'https://www.xiaoheiketang.com/personal/myCourse', 'accounting-junior':'https://www.zlketang.com/personal/index.html?name=1' };
-
-      /* ===== Supabase ===== */
       const SUPABASE_URL = 'https://haqpfmfcqkgibipzqdxh.supabase.co';
       const SUPABASE_ANON_KEY = 'sb_publishable_Zl7mNHnNrXl2Y_rXQfxL8A_J2bIZpQE';
       let supabaseClient = null; let authMode = 'login'; let authUser = null;
@@ -883,8 +849,6 @@
       async function handleAuthSubmit(event) { event.preventDefault(); const sb = ensureSupabase(); if (!sb) return; const email = $('auth-email') ? $('auth-email').value.trim() : ''; const password = $('auth-password') ? $('auth-password').value : ''; if (!email || !password) return; const errEl = $('auth-error'); const submitBtn = $('auth-submit'); if (errEl) { errEl.style.display = 'none'; errEl.style.color = 'var(--danger)'; } if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '处理中…'; } let res = null; try { if (authMode === 'login') res = await sb.auth.signInWithPassword({ email, password }); else res = await sb.auth.signUp({ email, password }); } catch (e) { res = { error: { message: e && e.message ? e.message : '网络异常，请稍后重试' } }; } if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = authMode === 'login' ? '登录' : '注册并登录'; } if (res.error) { if (errEl) { errEl.textContent = res.error.message || '操作失败，请稍后重试'; errEl.style.display = 'block'; } return; } if (authMode === 'signup' && res.data && res.data.user && !res.data.session) { if (errEl) { errEl.textContent = '注册成功！请前往邮箱完成验证后再登录。'; errEl.style.color = 'var(--low)'; errEl.style.display = 'block'; } authMode = 'login'; if ($('auth-title')) $('auth-title').textContent = '登录'; if ($('auth-switch')) $('auth-switch').textContent = '没有账号？去注册'; if ($('auth-submit')) $('auth-submit').textContent = '登录'; return; } closeAuth(); if (event.target && event.target.reset) event.target.reset(); }
       async function handleLogout() { const sb = ensureSupabase(); if (!sb) return; await sb.auth.signOut(); authUser = null; renderAuthArea(); }
       function initAuth() { const sb = ensureSupabase(); if (!sb) { console.warn('[恋学] Supabase SDK 未加载，登录模块不可用（不影响其他功能）'); renderAuthArea(); return; } sb.auth.getSession().then(({ data }) => { authUser = (data && data.session && data.session.user) || null; renderAuthArea(); }).catch(() => { renderAuthArea(); }); sb.auth.onAuthStateChange((event, session) => { authUser = (session && session.user) || null; renderAuthArea(); }); }
-
-      /* ---- 双人空间（实时同步 + 图片上传辅助） ---- */
       let dualChannel = null; let dualImageFile = null;
       function dualPostFromRow(r) { return { id: r.id, author: r.author === 'B' ? 'B' : 'A', text: r.text || '', mood: r.mood || '', sticker: r.sticker || '', image_url: r.image_url || '', ts: new Date(r.created_at).getTime() }; }
       function compressImage(file, maxSide = 1280, quality = 0.82) { return new Promise((resolve) => { const img = new Image(); const url = URL.createObjectURL(file); img.onload = () => { let { width, height } = img; if (width > maxSide || height > maxSide) { const ratio = Math.min(maxSide / width, maxSide / height); width = Math.round(width * ratio); height = Math.round(height * ratio); } const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); canvas.toBlob((blob) => { URL.revokeObjectURL(url); resolve(blob || file); }, 'image/jpeg', quality); }; img.onerror = () => { URL.revokeObjectURL(url); resolve(file); }; img.src = url; }); }
@@ -893,8 +857,6 @@
       function initDualRealtime() { const sb = ensureSupabase(); if (!sb) { console.warn('[恋学] 双人空间实时同步不可用（Supabase 未加载），仅本地模式'); return; } sb.from('dual_posts').select('id, author, text, mood, sticker, image_url, created_at').order('created_at', { ascending: true }).then(({ data, error }) => { if (!error && Array.isArray(data) && data.length) { const byId = new Map(dual.posts.map((p) => [p.id, p])); data.forEach((r) => { const p = dualPostFromRow(r); if (p.id) byId.set(p.id, p); }); dual.posts = [...byId.values()]; persistDual(); renderDual(); } }).catch(() => {}); dualChannel = sb.channel('dual-posts-channel').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'dual_posts' }, (payload) => { const r = payload.new; if (!r || !r.id) return; if (dual.posts.some((p) => p.id === r.id)) return; dual.posts.unshift(dualPostFromRow(r)); persistDual(); renderDual(); }).subscribe((status, err) => { if (err) console.warn('[恋学] Realtime 订阅失败', err); }); }
       function openImageViewer(url) { const modal = $('image-viewer'); const img = $('image-viewer-img'); if (!modal || !img || !url) return; img.src = url; modal.classList.remove('hidden'); modal.classList.remove('closing'); }
       function closeImageViewer() { const modal = $('image-viewer'); if (!modal || modal.classList.contains('hidden')) return; modal.classList.add('closing'); setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('closing'); }, 200); }
-
-      /* ===== 业务状态 ===== */
       let tasks = loadTasks(); let certs; let checkins; let countdowns; let pomodoro; let pomodoroTimer = null; let pomodoroNotice = ''; let filter = 'all'; let tagFilter = 'all'; let search = ''; let activeView = 'tasks'; let draggedId = null; let calendarCursor = new Date(new Date().getFullYear(),new Date().getMonth(),1); let editingCountdownId = null;
       let mindmaps = []; let mmCurrentId = null; let mmSelectedId = null; let mmApiEndpoint = ''; let mmEditing = false;
       const mmPalette = ['#c9ff00','#7effc6','#ff9ef5','#6ecbff','#ffbb6e','#a89bff','#ff8a8a']; const MM = { W:210, H:40, COL:64, ROW:15, PAD:28 };
@@ -903,17 +865,14 @@
       let mistakes = loadMistakes(); let mistakeFilter = 'all'; let mistakeSearch = ''; let editingMistakeId = null;
       let vocab = loadVocab(); let vocabFilter = 'all'; let vocabSearch = ''; let editingVocabId = null;
       let quoteUsed = loadQuoteUsed(); let lastQuoteText = '';
+      let careers = loadCareers(); let careerCurrentId = null; let editingCareerId = null; let editingCareerStepId = null;
       let bgSettings = (()=>{ try { const raw=JSON.parse(localStorage.getItem(BG_SETTINGS_KEY)); return { intensity: typeof raw?.intensity==='number'?raw.intensity:60, speed: typeof raw?.speed==='number'?raw.speed:70, scan: raw?.scan!==false, simple: !!raw?.simple }; } catch { return { intensity:60, speed:70, scan:true, simple:false }; } })();
       function saveBgSettings(){ safeSet(BG_SETTINGS_KEY, JSON.stringify(bgSettings)); if (window.applyBgSettings) window.applyBgSettings(bgSettings); }
-
-      /* ===== 积分 ===== */
       function dailyPoints(key) { const d = new Date(key + 'T00:00:00'); const day = d.getDay(); return (day === 0 || day === 6) ? 2 : 1; }
       function calcTotalIntegral() { let total = 0; Object.keys(checkins || {}).forEach((k) => { if (checkins[k]) total += (Number(checkins[k].points) || dailyPoints(k)); }); return total; }
       function countWeekend() { let n = 0; Object.keys(checkins || {}).forEach((k) => { const d = new Date(k + 'T00:00:00'); const day = d.getDay(); if (day === 0 || day === 6) n += 1; }); return n; }
       function countMonth() { const now = new Date(); const prefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; return Object.keys(checkins || {}).filter((k) => k.indexOf(prefix) === 0).length; }
       function totalDays() { return Object.keys(checkins || {}).length; }
-
-      /* ===== 成就（MC 像素） ===== */
       const ACHIEVEMENTS = [
         { id:'first', ico:'🌱', name:'第一步', desc:'累计签到 1 天', check:() => totalDays() >= 1 },
         { id:'d3', ico:'📅', name:'三日之约', desc:'连续签到 3 天', check:() => calcStreak() >= 3 },
@@ -930,43 +889,12 @@
       function renderAchievements() { const grid = $('achv-grid'); const progress = $('achv-progress'); if (!grid) return; const unlocked = achievementsUnlocked().map((a) => a.id); grid.innerHTML = ACHIEVEMENTS.map((a) => `<div class="mc-slot ${unlocked.includes(a.id) ? 'unlocked' : 'locked'}"><span class="mc-slot-ico">${unlocked.includes(a.id) ? a.ico : '🔒'}</span><span class="mc-slot-name">${escapeHtml(a.name)}</span><span class="mc-slot-desc">${escapeHtml(a.desc)}</span><span class="mc-slot-state">${unlocked.includes(a.id) ? 'COMPLETED' : 'LOCKED'}</span></div>`).join(''); if (progress) progress.textContent = `PROGRESS ${unlocked.length}/${ACHIEVEMENTS.length} · POINTS ${calcTotalIntegral()} · DAYS ${totalDays()}`; }
       function openAchievements() { const modal = $('achv-modal'); if (!modal) return; renderAchievements(); modal.classList.remove('hidden'); modal.classList.remove('closing'); }
       function closeAchievements() { const modal = $('achv-modal'); if (!modal || modal.classList.contains('hidden')) return; modal.classList.add('closing'); setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('closing'); }, 200); }
-
-      /* ===== 成就解锁 · 右上角弹窗 ===== */
       let achvToasted = loadAchvToasted();
       function loadAchvToasted() { try { const raw = JSON.parse(localStorage.getItem(ACHV_TOAST_KEY)); return Array.isArray(raw) ? raw : []; } catch (e) { return []; } }
       function saveAchvToasted() { safeSet(ACHV_TOAST_KEY, JSON.stringify(achvToasted)); }
-      function showAchvToast(a) {
-        const wrap = $('achv-toast-wrap'); if (!wrap) return;
-        const t = document.createElement('div');
-        t.className = 'achv-toast';
-        t.innerHTML = `<span class="achv-toast-ico">${a.ico}</span><div><div class="achv-toast-title">ACHIEVEMENT · ${escapeHtml(a.name)}</div><div class="achv-toast-desc">${escapeHtml(a.desc)}</div></div>`;
-        wrap.appendChild(t);
-        requestAnimationFrame(() => { t.classList.add('show'); setTimeout(() => t.classList.add('glow'), 200); });
-        setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 450); }, 5200);
-      }
-      function checkAchievementToasts() {
-        const unlockedIds = achievementsUnlocked().map((a) => a.id);
-        let fresh = false;
-        unlockedIds.forEach((id) => {
-          if (achvToasted.includes(id)) return;
-          achvToasted.push(id);
-          const a = ACHIEVEMENTS.find((x) => x.id === id);
-          if (a) showAchvToast(a);
-          fresh = true;
-        });
-        if (fresh) saveAchvToasted();
-      }
-      function renderIntegral() {
-        if ($('integral-total')) $('integral-total').textContent = calcTotalIntegral();
-        const todayKey = dateKey(new Date());
-        const hint = $('integral-today-hint');
-        if (hint) hint.textContent = checkins[todayKey] ? `今日已签到（+${checkins[todayKey].points || dailyPoints(todayKey)} 积分）` : `今日签到可得 ${dailyPoints(todayKey)} 积分${dailyPoints(todayKey) === 2 ? '（周末双倍 🎉）' : ''}`;
-        if ($('home-points-stat')) $('home-points-stat').textContent = calcTotalIntegral();
-        if ($('home-achv-stat')) $('home-achv-stat').textContent = achievementsUnlocked().length;
-        checkAchievementToasts();
-      }
-
-      /* ===== 数据 ===== */
+      function showAchvToast(a) { const wrap = $('achv-toast-wrap'); if (!wrap) return; const t = document.createElement('div'); t.className = 'achv-toast'; t.innerHTML = `<span class="achv-toast-ico">${a.ico}</span><div><div class="achv-toast-title">ACHIEVEMENT · ${escapeHtml(a.name)}</div><div class="achv-toast-desc">${escapeHtml(a.desc)}</div></div>`; wrap.appendChild(t); requestAnimationFrame(() => { t.classList.add('show'); setTimeout(() => t.classList.add('glow'), 200); }); setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 450); }, 5200); }
+      function checkAchievementToasts() { const unlockedIds = achievementsUnlocked().map((a) => a.id); let fresh = false; unlockedIds.forEach((id) => { if (achvToasted.includes(id)) return; achvToasted.push(id); const a = ACHIEVEMENTS.find((x) => x.id === id); if (a) showAchvToast(a); fresh = true; }); if (fresh) saveAchvToasted(); }
+      function renderIntegral() { if ($('integral-total')) $('integral-total').textContent = calcTotalIntegral(); const todayKey = dateKey(new Date()); const hint = $('integral-today-hint'); if (hint) hint.textContent = checkins[todayKey] ? `今日已签到（+${checkins[todayKey].points || dailyPoints(todayKey)} 积分）` : `今日签到可得 ${dailyPoints(todayKey)} 积分${dailyPoints(todayKey) === 2 ? '（周末双倍 🎉）' : ''}`; if ($('home-points-stat')) $('home-points-stat').textContent = calcTotalIntegral(); if ($('home-achv-stat')) $('home-achv-stat').textContent = achievementsUnlocked().length; checkAchievementToasts(); }
       const seedCerts = [
         { id:'cet4', name:'英语四级', desc:'大学英语基础能力证书，覆盖听力、阅读、写作与翻译。', time:'通常 6 月、12 月考试，3 月与 9 月报名。', difficulty:3, status:'todo' },
         { id:'cet6', name:'英语六级', desc:'面向更高阶英语综合能力的全国性考试。', time:'通常 6 月、12 月考试，3 月与 9 月报名。', difficulty:4, status:'todo' },
@@ -990,10 +918,13 @@
       function loadMistakes() { try { const raw = JSON.parse(localStorage.getItem(MISTAKE_KEY)); return Array.isArray(raw) ? raw : []; } catch { return []; } }
       function loadVocab() { try { const raw = JSON.parse(localStorage.getItem(VOCAB_KEY)); return Array.isArray(raw) ? raw : []; } catch { return []; } }
       function loadQuoteUsed() { try { const raw = JSON.parse(localStorage.getItem(QUOTE_KEY)); return Array.isArray(raw) ? raw.slice(-200) : []; } catch { return []; } }
+      function loadCareers() { try { const raw = JSON.parse(localStorage.getItem(CAREER_KEY)); return Array.isArray(raw) ? raw.map(normalizeCareer) : []; } catch { return []; } }
+      function normalizeCareer(c) { return { id:String(c.id || uid()), title:String(c.title || '未命名规划').trim(), desc:String(c.desc || ''), ts:Number(c.ts) || Date.now(), steps:Array.isArray(c.steps) ? c.steps.map((s) => ({ id:String(s.id || uid()), text:String(s.text || '').trim(), group:String(s.group || ''), due:s.due || '', note:String(s.note || ''), done:!!s.done, ts:Number(s.ts) || Date.now() })) : [] }; }
       function persistQuoteUsed() { safeSet(QUOTE_KEY, JSON.stringify(quoteUsed.slice(-200))); }
       function persist() { try { safeSet(TASK_KEY, JSON.stringify(tasks)); safeSet(CERT_KEY, JSON.stringify(certs)); safeSet(CHECKIN_KEY, JSON.stringify(checkins)); safeSet(COUNTDOWN_KEY, JSON.stringify(countdowns)); safeSet(POMO_KEY, JSON.stringify({...pomodoro,running:undefined})); safeSet(MISTAKE_KEY, JSON.stringify(mistakes)); safeSet(VOCAB_KEY, JSON.stringify(vocab)); } catch (e) { console.warn('[恋学] persist 异常', e); } }
       function persistDual() { safeSet(DUAL_KEY, JSON.stringify({ identity: dual.identity, skin: dual.skin, posts: dual.posts })); }
       function persistMindMaps() { safeSet(MINDMAP_KEY, JSON.stringify({ maps: mindmaps, currentMapId: mmCurrentId, endpoint: mmApiEndpoint })); }
+      function persistCareers() { safeSet(CAREER_KEY, JSON.stringify(careers)); }
       function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2,9)}`; }
       function escapeHtml(text) { return String(text).replace(/[&<>'"]/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[c])); }
       function dateLabel() { const el = $('date-label'); if (el) el.textContent = new Intl.DateTimeFormat('zh-CN', { weekday:'long', month:'long', day:'numeric' }).format(new Date()); }
@@ -1012,29 +943,21 @@
       function dateKey(date) { const y = date.getFullYear(); const m = String(date.getMonth()+1).padStart(2,'0'); const d = String(date.getDate()).padStart(2,'0'); return `${y}-${m}-${d}`; }
       function renderCalendar() { try { const year = calendarCursor.getFullYear(); const month = calendarCursor.getMonth(); if ($('calendar-month')) $('calendar-month').textContent = `${year} 年 ${month+1} 月`; const first = new Date(year,month,1).getDay(); const days = new Date(year,month+1,0).getDate(); const prevDays = new Date(year,month,0).getDate(); const cells = []; const selectedKey = $('checkin-date') ? $('checkin-date').value : dateKey(new Date()); const todayKey = dateKey(new Date()); for (let i=0;i<42;i++) { const day = i-first+1; let date; let muted = false; if (day < 1) { date = new Date(year,month-1,prevDays+day); muted = true; } else if (day > days) { date = new Date(year,month+1,day-days); muted = true; } else date = new Date(year,month,day); const key = dateKey(date); if (key > todayKey) muted = true; const checked = !!checkins[key] && checkins[key].points >= 1; const today = key === todayKey; const sel = key === selectedKey; cells.push(`<button type="button" class="day-cell ${muted ? 'muted' : ''} ${today ? 'today' : ''} ${checked ? 'checked' : ''} ${sel ? 'selected' : ''}" data-date="${key}"><span class="day-number">${date.getDate()}</span></button>`); } if ($('calendar-grid')) $('calendar-grid').innerHTML = cells.join(''); } catch (e) { console.warn('[恋学] renderCalendar 异常', e); } }
       function calcStreak() { const d = new Date(); if (!checkins[dateKey(d)]) d.setDate(d.getDate()-1); let streak = 0; while (checkins[dateKey(d)]) { streak += 1; d.setDate(d.getDate()-1); } return streak; }
-      function openCheckin(date) {
-        const todayKey = dateKey(new Date()); const isToday = date === todayKey;
-        const record = checkins[date] || {};
-        if ($('checkin-date')) $('checkin-date').value = date;
-        if ($('checkin-modal-title')) $('checkin-modal-title').textContent = isToday ? '今日签到' : `${date} 签到`;
-        if ($('checkin-date-label')) $('checkin-date-label').textContent = `日期 · ${date}${record.points ? '（已签到）' : '（未签到）'}`;
-        if ($('checkin-streak')) $('checkin-streak').textContent = isToday ? `连续签到 ${calcStreak()} 天` : '打卡记录';
-        if ($('checkin-today-tag')) $('checkin-today-tag').classList.toggle('hidden', !isToday);
-        const submitBtn = $('checkin-submit-btn');
-        const lockHint = $('checkin-lock-hint');
-        if (submitBtn) { submitBtn.disabled = !isToday; submitBtn.textContent = isToday ? '签到' : (date > todayKey ? '不可提前签' : '不可补签'); }
-        if (lockHint) { lockHint.style.display = isToday ? 'none' : 'block'; lockHint.textContent = date > todayKey ? '未来日期不能提前签到' : '只能签到当天，不可补签'; }
-        renderIntegral();
-        renderCalendar();
-        const modal = $('checkin-modal'); if (!modal) return;
-        modal.classList.remove('hidden'); modal.classList.remove('closing');
-      }
+      function openCheckin(date) { const todayKey = dateKey(new Date()); const isToday = date === todayKey; const record = checkins[date] || {}; if ($('checkin-date')) $('checkin-date').value = date; if ($('checkin-modal-title')) $('checkin-modal-title').textContent = isToday ? '今日签到' : `${date} 签到`; if ($('checkin-date-label')) $('checkin-date-label').textContent = `日期 · ${date}${record.points ? '（已签到）' : '（未签到）'}`; if ($('checkin-streak')) $('checkin-streak').textContent = isToday ? `连续签到 ${calcStreak()} 天` : '打卡记录'; if ($('checkin-today-tag')) $('checkin-today-tag').classList.toggle('hidden', !isToday); const submitBtn = $('checkin-submit-btn'); const lockHint = $('checkin-lock-hint'); if (submitBtn) { submitBtn.disabled = !isToday; submitBtn.textContent = isToday ? '签到' : (date > todayKey ? '不可提前签' : '不可补签'); } if (lockHint) { lockHint.style.display = isToday ? 'none' : 'block'; lockHint.textContent = date > todayKey ? '未来日期不能提前签到' : '只能签到当天，不可补签'; } renderIntegral(); renderCalendar(); const modal = $('checkin-modal'); if (!modal) return; modal.classList.remove('hidden'); modal.classList.remove('closing'); }
       function openSignin() { openCheckin(dateKey(new Date())); }
       function closeCheckin() { const modal = $('checkin-modal'); if (!modal || modal.classList.contains('hidden')) return; modal.classList.add('closing'); setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('closing'); }, 200); }
       function formatCountdown(ms) { const total = Math.max(0,Math.floor(ms/1000)); return { days:Math.floor(total/86400), hours:Math.floor(total%86400/3600), minutes:Math.floor(total%3600/60), seconds:total%60 }; }
       function renderCountdowns() { try { const el = $('countdown-list'); if (!el) return; const now = Date.now(); el.innerHTML = countdowns.map((item) => { const diff = new Date(item.date).getTime()-now; const t = formatCountdown(diff); const expired = diff <= 0; return `<article class="glass lift countdown-card ${expired ? 'expired' : ''}" data-countdown-id="${item.id}"><h3 class="countdown-title">${escapeHtml(item.title)}</h3><p class="countdown-date">${expired ? '已到期' : `目标 · ${escapeHtml(item.date.replace('T',' '))}`}</p><div class="countdown-time"><strong>${expired ? '0' : t.days}</strong><span>天</span><strong>${String(t.hours).padStart(2,'0')}</strong><span>时</span><strong>${String(t.minutes).padStart(2,'0')}</strong><span>分</span><strong>${String(t.seconds).padStart(2,'0')}</strong><span>秒</span></div>${item.note ? `<p class="panel-copy">${escapeHtml(item.note)}</p>` : ''}<div class="countdown-footer"><button class="mini-btn countdown-edit" type="button" title="编辑">✎</button><button class="mini-btn countdown-delete" type="button" title="删除">×</button></div></article>`; }).join(''); if ($('countdown-empty')) $('countdown-empty').classList.toggle('hidden', countdowns.length > 0); } catch (e) { console.warn('[恋学] renderCountdowns 异常', e); } }
       function renderPomodoro() { try { const ring = $('pomodoro-ring'); if (!ring) return; const total = (pomodoro.mode === 'work' ? pomodoro.work : pomodoro.break) * 60; const elapsed = Math.max(0,total-pomodoro.seconds); ring.style.setProperty('--progress',`${Math.min(360,elapsed/total*360)}deg`); if ($('pomodoro-mode')) $('pomodoro-mode').textContent = pomodoro.mode === 'work' ? '专注时间' : '休息时间'; if ($('pomodoro-time')) $('pomodoro-time').textContent = `${String(Math.floor(pomodoro.seconds/60)).padStart(2,'0')}:${String(pomodoro.seconds%60).padStart(2,'0')}`; if ($('pomodoro-start')) $('pomodoro-start').textContent = pomodoroTimer ? '暂停' : '开始专注'; if ($('pomodoro-status')) $('pomodoro-status').textContent = pomodoroNotice || `${pomodoroTimer ? '进行中' : '准备开始'} · 已完成 ${pomodoro.completed} 个番茄`; if ($('work-minutes')) $('work-minutes').value = pomodoro.work; if ($('break-minutes')) $('break-minutes').value = pomodoro.break; } catch (e) { console.warn('[恋学] renderPomodoro 异常', e); } }
       function renderHomeSummary() { try { if ($('home-active-stat')) $('home-active-stat').textContent = tasks.filter((task) => !task.completed).length; if ($('home-streak-stat')) $('home-streak-stat').textContent = calcStreak(); renderIntegral(); } catch (e) {} }
+      function currentCareer() { return careers.find((c) => c.id === careerCurrentId) || null; }
+      function careerDoneCount(c) { return c.steps.filter((s) => s.done).length; }
+      function parseCareerText(text) { const lines = text.split('\n').map((l) => l.trim()).filter(Boolean); if (!lines.length) return null; let title = lines[0].replace(/^#+\s*/, '').trim() || '未命名规划'; let desc = ''; const steps = []; let group = ''; for (let i = 1; i < lines.length; i++) { const raw = lines[i]; if (/^#{2,}\s*/.test(raw)) { group = raw.replace(/^#{2,}\s*/, '').trim(); continue; } if (raw.startsWith('>')) { if (!desc) desc = raw.replace(/^>\s*/, '').trim(); continue; } let line = raw.replace(/^[-•·*□▪]\s*/, '').replace(/^\[[ xX]\]\s*/, '').replace(/^[xX]\s*/, ''); let due = ''; const dm = line.match(/(\d{4})[/.年](\d{1,2})[/.月](\d{1,2})?/); if (dm) { const y = dm[1]; const m = String(dm[2]).padStart(2,'0'); const d = dm[3] ? String(dm[3]).padStart(2,'0') : '01'; due = `${y}-${m}-${d}`; line = line.replace(/(\d{4})[/.年](\d{1,2})[/.月](\d{1,2})?/, '').trim(); } let note = ''; const nm = line.split('|'); if (nm.length > 1) { note = nm.slice(1).join('|').trim(); line = nm[0].trim(); } if (line) steps.push({ id: uid(), text: line, group, due, note, done: false, ts: Date.now() }); } return { title, desc, steps }; }
+      function renderCareerSteps(list, c) { let lastGroup = null; list.innerHTML = c.steps.map((s) => { let groupHtml = ''; if (s.group !== lastGroup) { lastGroup = s.group; groupHtml = `<div class="career-step-group">${escapeHtml(s.group || '日常行动')}</div>`; } return `${groupHtml}<div class="career-step ${s.done ? 'done' : ''}" data-cs-id="${s.id}"><label class="check-label"><input type="checkbox" ${s.done ? 'checked' : ''} aria-label="完成：${escapeHtml(s.text)}"><span class="check-box"><span class="checkmark">✓</span></span></label><div class="career-step-main"><p class="career-step-text">${escapeHtml(s.text)}</p>${s.note ? `<p class="career-step-note">${escapeHtml(s.note)}</p>` : ''}<div class="career-step-meta">${s.due ? `<span class="pill" style="color:var(--accent);background:var(--accent-soft);border-color:transparent">截止 · ${escapeHtml(s.due)}</span>` : ''}${s.group ? `<span class="pill">${escapeHtml(s.group)}</span>` : ''}</div></div><span class="career-step-actions"><button class="mini-btn career-step-edit" type="button" title="编辑">✎</button><button class="mini-btn career-step-delete" type="button" title="删除">×</button></span></div>`; }).join(''); }
+      function renderCareers() { try { const list = $('career-list'); if (!list) return; const c = currentCareer(); list.innerHTML = careers.map((item) => { const total = item.steps.length; const done = careerDoneCount(item); const pct = total ? Math.round(done / total * 100) : 0; return `<article class="glass lift career-card ${item.id === careerCurrentId ? 'selected' : ''}" data-career-id="${item.id}"><h3 class="career-card-name">${escapeHtml(item.title)}</h3>${item.desc ? `<p class="career-card-desc">${escapeHtml(item.desc)}</p>` : ''}<div class="career-progress"><i style="width:${pct}%"></i></div><div class="career-card-meta"><span>${total} 步骤 · ${done} 完成</span><strong>${pct}%</strong></div></article>`; }).join(''); if ($('career-empty')) $('career-empty').classList.toggle('hidden', careers.length > 0); const detail = $('career-detail'); if (!detail) return; if (!c) { detail.classList.add('hidden'); return; } detail.classList.remove('hidden'); if ($('career-detail-title')) $('career-detail-title').textContent = c.title; if ($('career-detail-desc')) $('career-detail-desc').textContent = c.desc || '暂无总目标描述'; const total = c.steps.length, done = careerDoneCount(c), pct = total ? Math.round(done / total * 100) : 0; if ($('career-detail-stats')) $('career-detail-stats').innerHTML = `<span>阶段步骤 <strong>${total}</strong></span><span>已完成 <strong style="color:var(--low)">${done}</strong></span><span>进度 <strong>${pct}%</strong></span>`; if ($('career-detail-progress')) $('career-detail-progress').style.width = pct + '%'; if ($('career-step-count')) $('career-step-count').textContent = `${done} / ${total} 步骤`; const stepsEl = $('career-steps'); if (stepsEl) { if (c.steps.length) renderCareerSteps(stepsEl, c); else stepsEl.innerHTML = `<div class="empty-state"><p>还没有行动步骤，点击「添加步骤」或使用一键导入。</p></div>`; } } catch (e) { console.warn('[恋学] renderCareers 异常', e); } }
+      function openCareerForm(open = true) { const form = $('career-form'); if (!form) return; form.classList.toggle('open', open); if (open) { const t = $('career-title-input'); if (t) t.focus(); } }
+      function openCareerStepForm(open = true) { const form = $('career-step-form'); if (!form) return; form.classList.toggle('open', open); if (!open) { editingCareerStepId = null; } if (open) { const t = $('career-step-text-input'); if (t) t.focus(); } }
+      function importCareersFromArray(items) { if (!Array.isArray(items) || !items.length) return 0; let count = 0; items.forEach((raw) => { const c = normalizeCareer(raw); if (c.title) { careers.push(c); count++; } }); if (count) { careerCurrentId = careers[careers.length - 1].id; } return count; }
       function mmNode(text, children = []) { return { id: uid(), text: String(text), children }; }
       function currentMap() { return mindmaps.find((m) => m.id === mmCurrentId) || null; }
       function findNode(map, id) { if (!map || !map.root) return null; let found = null; (function walk(node, parent) { if (found) return; if (node.id === id) { found = { node, parent }; return; } node.children.forEach((c) => walk(c, node)); })(map.root, null); return found; }
@@ -1053,70 +976,18 @@
       function mapToMarkdown(map) { let out = `# ${map.title || '未命名'}\n\n`; (function walk(node, path) { if (!path.length) out += `# ${node.text}\n\n`; else out += `${'  '.repeat(path.length - 1)}${path.join('.')}. ${node.text}\n`; node.children.forEach((c, i) => walk(c, [...path, i + 1])); })(map.root, []); return out; }
       function generateReviewMap() { if (!tasks.length) { alert('还没有学习任务，先到「学习任务」里添加几条吧。'); return; } const now = new Date(); const todayKey = dateKey(now); const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay()); const weekKeys = new Set(); for (let i=0;i<7;i++){ const d = new Date(weekStart); d.setDate(weekStart.getDate()+i); weekKeys.add(dateKey(d)); } const monthStart = new Date(now.getFullYear(), now.getMonth(), 1); const monthKeys = new Set(); const dim = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate(); for (let i=0;i<dim;i++){ const d = new Date(monthStart); d.setDate(monthStart.getDate()+i); monthKeys.add(dateKey(d)); } const taskKey = (t) => t.dueDate ? dateKey(new Date(`${t.dueDate}T00:00:00`)) : null; const uncompleted = tasks.filter((t) => !t.completed); const mk = (label, arr) => mmNode(label, arr.map((t) => mmNode(t.text, t.tags.length ? t.tags.map((tag) => mmNode('# '+tag)) : []))); const root = mmNode('学习任务复习'); root.children = [ mk('今日任务', uncompleted.filter((t) => taskKey(t) === todayKey)), mk('本周任务', uncompleted.filter((t) => taskKey(t) && weekKeys.has(taskKey(t)))), mk('本月任务', uncompleted.filter((t) => taskKey(t) && monthKeys.has(taskKey(t)))) ]; if (!root.children.some((c) => c.children.length)) root.children = [ mk('未完成任务', uncompleted.slice(0, 20)) ]; const nm = { id: uid(), title: '任务复习脑图', root }; mindmaps.push(nm); mmCurrentId = nm.id; mmSelectedId = root.id; persistMindMaps(); renderMindMap(); setView('mindmap'); }
       function formatDualTime(ts) { const d = new Date(ts); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
-      function renderDual() {
-        try {
-          const list = $('dual-list'); if (!list) return;
-          const view = $('dual-view');
-          if (view) {
-            view.classList.remove('skin-cinnamoroll', 'skin-kuromi', 'skin-kitty');
-            view.classList.add('skin-' + dual.skin);
-          }
-          document.querySelectorAll('.skin-btn').forEach((b) => b.classList.toggle('active', b.dataset.skin === dual.skin));
-          const sorted = [...dual.posts].sort((a, b) => b.ts - a.ts);
-          list.innerHTML = sorted.map((p) => {
-            const own = p.author === dual.identity;
-            const who = own ? '你' : '同伴';
-            const avatar = p.author === 'A' ? '🐶' : '🎀';
-            const moodSticker = [p.sticker, p.mood].filter(Boolean).map((s) => `<span class="dual-emoji">${escapeHtml(s)}</span>`).join('');
-            const media = p.image_url ? `<div class="dual-bubble-media"><img src="${escapeHtml(p.image_url)}" alt="日常照片" /></div>` : '';
-            const actions = `<span class="dual-bubble-actions"><button class="mini-btn dual-edit" type="button" title="编辑">✎</button><button class="mini-btn dual-delete" type="button" title="删除">×</button></span>`;
-            return `<div class="dual-row ${own ? 'right' : 'left'}" data-dual-id="${p.id}">
-              <span class="dual-avatar" aria-hidden="true">${avatar}</span>
-              <div class="dual-bubble">
-                <span class="bubble-deco" aria-hidden="true"></span>
-                ${media}
-                ${p.text ? `<p class="dual-bubble-text">${escapeHtml(p.text)}</p>` : ''}
-                ${moodSticker ? `<div class="dual-bubble-emoji-row">${moodSticker}</div>` : ''}
-                <div class="dual-bubble-head"><span class="dual-bubble-who">${who}</span><span class="dual-bubble-time">${formatDualTime(p.ts)}</span></div>
-                ${actions}
-              </div>
-            </div>`;
-          }).join('');
-          if ($('dual-count')) $('dual-count').textContent = dual.posts.length;
-          if ($('dual-count-a')) $('dual-count-a').textContent = dual.posts.filter((p) => p.author === 'A').length;
-          if ($('dual-count-b')) $('dual-count-b').textContent = dual.posts.filter((p) => p.author === 'B').length;
-          if ($('dual-today')) $('dual-today').textContent = dual.posts.filter((p) => dateKey(new Date(p.ts)) === dateKey(new Date())).length;
-          if ($('dual-empty')) $('dual-empty').classList.toggle('hidden', dual.posts.length > 0);
-          if ($('dual-mood-options')) $('dual-mood-options').innerHTML = moods.map((m) => `<button type="button" class="mood-btn ${dualMoodSel === m ? 'selected' : ''}" data-mood="${m}" aria-label="${m}">${m}</button>`).join('');
-          if ($('dual-sticker-options')) $('dual-sticker-options').innerHTML = dualStickers.map((s) => `<button type="button" class="sticker-btn ${dualStickerSel === s ? 'selected' : ''}" data-sticker="${s}" aria-label="${s}">${s}</button>`).join('');
-        } catch (e) { console.warn('[恋学] renderDual 异常', e); }
-      }
-      function openDualForm(open = true) {
-        const form = $('dual-form'); if (!form) return;
-        form.classList.toggle('open', open);
-        if (open) {
-          editingDualId = null;
-          if ($('dual-text')) $('dual-text').value = '';
-          dualMoodSel = ''; dualStickerSel = '';
-          dualImageFile = null;
-          const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none';
-          const imgInp = $('dual-image-input'); if (imgInp) imgInp.value = '';
-          renderDual();
-          const t = $('dual-text'); if (t) t.focus();
-        }
-      }
+      function renderDual() { try { const list = $('dual-list'); if (!list) return; const view = $('dual-view'); if (view) { view.classList.remove('skin-cinnamoroll', 'skin-kuromi', 'skin-kitty'); view.classList.add('skin-' + dual.skin); } document.querySelectorAll('.skin-btn').forEach((b) => b.classList.toggle('active', b.dataset.skin === dual.skin)); const sorted = [...dual.posts].sort((a, b) => b.ts - a.ts); list.innerHTML = sorted.map((p) => { const own = p.author === dual.identity; const who = own ? '你' : '同伴'; const avatar = p.author === 'A' ? '🐶' : '🎀'; const moodSticker = [p.sticker, p.mood].filter(Boolean).map((s) => `<span class="dual-emoji">${escapeHtml(s)}</span>`).join(''); const media = p.image_url ? `<div class="dual-bubble-media"><img src="${escapeHtml(p.image_url)}" alt="日常照片" /></div>` : ''; const actions = `<span class="dual-bubble-actions"><button class="mini-btn dual-edit" type="button" title="编辑">✎</button><button class="mini-btn dual-delete" type="button" title="删除">×</button></span>`; return `<div class="dual-row ${own ? 'right' : 'left'}" data-dual-id="${p.id}"><span class="dual-avatar" aria-hidden="true">${avatar}</span><div class="dual-bubble"><span class="bubble-deco" aria-hidden="true"></span>${media}${p.text ? `<p class="dual-bubble-text">${escapeHtml(p.text)}</p>` : ''}${moodSticker ? `<div class="dual-bubble-emoji-row">${moodSticker}</div>` : ''}<div class="dual-bubble-head"><span class="dual-bubble-who">${who}</span><span class="dual-bubble-time">${formatDualTime(p.ts)}</span></div>${actions}</div></div>`; }).join(''); if ($('dual-count')) $('dual-count').textContent = dual.posts.length; if ($('dual-count-a')) $('dual-count-a').textContent = dual.posts.filter((p) => p.author === 'A').length; if ($('dual-count-b')) $('dual-count-b').textContent = dual.posts.filter((p) => p.author === 'B').length; if ($('dual-today')) $('dual-today').textContent = dual.posts.filter((p) => dateKey(new Date(p.ts)) === dateKey(new Date())).length; if ($('dual-empty')) $('dual-empty').classList.toggle('hidden', dual.posts.length > 0); if ($('dual-mood-options')) $('dual-mood-options').innerHTML = moods.map((m) => `<button type="button" class="mood-btn ${dualMoodSel === m ? 'selected' : ''}" data-mood="${m}" aria-label="${m}">${m}</button>`).join(''); if ($('dual-sticker-options')) $('dual-sticker-options').innerHTML = dualStickers.map((s) => `<button type="button" class="sticker-btn ${dualStickerSel === s ? 'selected' : ''}" data-sticker="${s}" aria-label="${s}">${s}</button>`).join(''); } catch (e) { console.warn('[恋学] renderDual 异常', e); } }
+      function openDualForm(open = true) { const form = $('dual-form'); if (!form) return; form.classList.toggle('open', open); if (open) { editingDualId = null; if ($('dual-text')) $('dual-text').value = ''; dualMoodSel = ''; dualStickerSel = ''; dualImageFile = null; const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none'; const imgInp = $('dual-image-input'); if (imgInp) imgInp.value = ''; renderDual(); const t = $('dual-text'); if (t) t.focus(); } }
       function renderMistakes() { try { const list = $('mistake-list'); if (!list) return; const needle = mistakeSearch.trim().toLowerCase(); const visible = mistakes.filter((m) => (!needle || `${m.problem} ${m.subject} ${m.reason} ${m.answer}`.toLowerCase().includes(needle)) && (mistakeFilter === 'all' || (mistakeFilter === 'open' ? m.status === 'open' : m.status === 'learned'))); list.innerHTML = visible.map((m) => `<article class="glass lift item-card" data-mistake-id="${m.id}"><div class="item-head"><span class="pill">${escapeHtml(m.subject || '未分类')}</span><span class="pill ${m.status === 'learned' ? 'status-learned' : 'status-open'}">${m.status === 'learned' ? '已掌握' : '未掌握'}</span><span class="item-actions"><button class="mini-btn mistake-toggle" type="button" title="切换掌握状态">✓</button><button class="mini-btn mistake-edit" type="button" title="编辑">✎</button><button class="mini-btn mistake-delete" type="button" title="删除">×</button></span></div><p class="item-title">${escapeHtml(m.problem)}</p>${m.reason ? `<p class="item-sub">原因 · ${escapeHtml(m.reason)}</p>` : ''}${m.answer ? `<p class="item-sub">答案 · ${escapeHtml(m.answer)}</p>` : ''}<div class="item-meta"><span class="due">${formatDualTime(m.ts)}</span></div></article>`).join(''); const open = mistakes.filter((m) => m.status === 'open').length; const learned = mistakes.length - open; if ($('mistake-total-stat')) $('mistake-total-stat').textContent = mistakes.length; if ($('mistake-open-stat')) $('mistake-open-stat').textContent = open; if ($('mistake-learned-stat')) $('mistake-learned-stat').textContent = learned; if ($('mistake-today-stat')) $('mistake-today-stat').textContent = mistakes.filter((m) => dateKey(new Date(m.ts)) === dateKey(new Date())).length; if ($('mistake-count')) $('mistake-count').textContent = `${open} 道未掌握${mistakes.length ? ` · 共 ${mistakes.length} 道` : ''}`; if ($('mistake-empty')) $('mistake-empty').classList.toggle('hidden', visible.length > 0); document.querySelectorAll('.filter-btn[data-mf]').forEach((button) => button.classList.toggle('active', button.dataset.mf === mistakeFilter)); } catch (e) { console.warn('[恋学] renderMistakes 异常', e); } }
       function openMistakeForm(open = true) { const form = $('mistake-form'); if (!form) return; form.classList.toggle('open', open); if (open) { editingMistakeId = null; if ($('mistake-problem-input')) $('mistake-problem-input').value = ''; if ($('mistake-answer-input')) $('mistake-answer-input').value = ''; if ($('mistake-subject-input')) $('mistake-subject-input').value = ''; if ($('mistake-reason-input')) $('mistake-reason-input').value = ''; if ($('mistake-status-input')) $('mistake-status-input').value = 'open'; const f = $('mistake-problem-input'); if (f) f.focus(); } }
       function renderVocab() { try { const list = $('vocab-list'); if (!list) return; const needle = vocabSearch.trim().toLowerCase(); const visible = vocab.filter((v) => (!needle || `${v.word} ${v.meaning} ${v.example}`.toLowerCase().includes(needle)) && (vocabFilter === 'all' || v.status === vocabFilter)); const statusMap = { new:'未学', learning:'学习中', mastered:'已掌握' }; const classMap = { new:'vocab-new', learning:'vocab-learning', mastered:'vocab-mastered' }; list.innerHTML = visible.map((v) => `<article class="glass lift item-card" data-vocab-id="${v.id}"><div class="item-head"><p class="vocab-word">${escapeHtml(v.word)}</p><span class="pill ${classMap[v.status]}">${statusMap[v.status]}</span><span class="item-actions"><button class="mini-btn vocab-cycle" type="button" title="切换掌握状态">⇄</button><button class="mini-btn vocab-edit" type="button" title="编辑">✎</button><button class="mini-btn vocab-delete" type="button" title="删除">×</button></span></div>${v.meaning ? `<p class="item-sub">${escapeHtml(v.meaning)}</p>` : ''}${v.example ? `<p class="item-sub">例句 · ${escapeHtml(v.example)}</p>` : ''}<div class="item-meta"><span class="due">${formatDualTime(v.ts)}</span></div></article>`).join(''); const learn = vocab.filter((v) => v.status === 'learning').length; const mastered = vocab.filter((v) => v.status === 'mastered').length; const fresh = vocab.length - learn - mastered; if ($('vocab-total-stat')) $('vocab-total-stat').textContent = vocab.length; if ($('vocab-new-stat')) $('vocab-new-stat').textContent = fresh; if ($('vocab-learning-stat')) $('vocab-learning-stat').textContent = learn; if ($('vocab-mastered-stat')) $('vocab-mastered-stat').textContent = mastered; if ($('vocab-count')) $('vocab-count').textContent = `${fresh} 个未学${vocab.length ? ` · 共 ${vocab.length} 个` : ''}`; if ($('vocab-empty')) $('vocab-empty').classList.toggle('hidden', visible.length > 0); document.querySelectorAll('.filter-btn[data-vf]').forEach((button) => button.classList.toggle('active', button.dataset.vf === vocabFilter)); } catch (e) { console.warn('[恋学] renderVocab 异常', e); } }
       function openVocabForm(open = true) { const form = $('vocab-form'); if (!form) return; form.classList.toggle('open', open); if (open) { editingVocabId = null; if ($('vocab-word-input')) $('vocab-word-input').value = ''; if ($('vocab-meaning-input')) $('vocab-meaning-input').value = ''; if ($('vocab-example-input')) $('vocab-example-input').value = ''; if ($('vocab-status-input')) $('vocab-status-input').value = 'new'; const f = $('vocab-word-input'); if (f) f.focus(); } }
       const vocabFlow = ['new', 'learning', 'mastered', 'new'];
-      function setView(view) { activeView = view; ['home','tasks','mindmap','mistakes','vocab','dual','certs','countdowns','pomodoro'].forEach((name) => { const section = $(`${name}-view`); if (!section) return; const show = view === name; section.classList.toggle('hidden', !show); if (show) { section.classList.remove('view-enter'); requestAnimationFrame(() => section.classList.add('view-enter')); } }); document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.view === view)); if (view === 'countdowns') renderCountdowns(); if (view === 'pomodoro') renderPomodoro(); if (view === 'mindmap') renderMindMap(); if (view === 'dual') renderDual(); if (view === 'mistakes') renderMistakes(); if (view === 'vocab') renderVocab(); renderHomeSummary(); }
+      function setView(view) { activeView = view; ['home','tasks','mindmap','mistakes','vocab','careers','dual','certs','countdowns','pomodoro'].forEach((name) => { const section = $(`${name}-view`); if (!section) return; const show = view === name; section.classList.toggle('hidden', !show); if (show) { section.classList.remove('view-enter'); requestAnimationFrame(() => section.classList.add('view-enter')); } }); document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.view === view)); if (view === 'countdowns') renderCountdowns(); if (view === 'pomodoro') renderPomodoro(); if (view === 'mindmap') renderMindMap(); if (view === 'dual') renderDual(); if (view === 'mistakes') renderMistakes(); if (view === 'vocab') renderVocab(); if (view === 'careers') renderCareers(); renderHomeSummary(); }
       function openTaskForm(open=true) { const form = $('task-form'); if (!form) return; form.classList.toggle('open', open); if (open) { const t = $('task-title-input'); if (t) t.focus(); } }
       function openCertForm(open=true) { const form = $('cert-form'); if (!form) return; form.classList.toggle('open', open); if (open) { const t = $('cert-name-input'); if (t) t.focus(); } }
       function addGeneratedTask(cert) { const due = new Date(Date.now() + 30 * 86400000).toISOString().slice(0,10); tasks.unshift(normalizeTask({ id:uid(), text:`备考：${cert.name}`, notes:`${cert.desc || ''} ${cert.time || ''}`.trim(), priority:'medium', dueDate:due, tags:['证书备考'], completed:false })); persist(); renderTasks(); setView('tasks'); openTaskForm(false); }
       function moveTask(id, direction) { const index = tasks.findIndex((task) => task.id === id); const target = direction === 'up' ? index - 1 : index + 1; if (index < 0 || target < 0 || target >= tasks.length) return; [tasks[index],tasks[target]] = [tasks[target],tasks[index]]; persist(); renderTasks(); }
-
-      /* ===== Hero / 导航 ===== */
       var navEl = document.querySelector('.workspace-nav');
       var modulesViewport = $('modules-viewport');
       function updateNav() { if (!navEl) return; var show = window.scrollY > 80; navEl.classList.toggle('nav-visible', show); }
@@ -1126,8 +997,6 @@
       on('scroll-down-btn','click', () => { revealModules(); if (modulesViewport) modulesViewport.scrollIntoView({ behavior: 'smooth' }); });
       on('hero-start','click', () => { setView('tasks'); revealModules(); scrollToModules(); });
       if ('IntersectionObserver' in window && modulesViewport) { var io = new IntersectionObserver(function (entries) { if (entries[0].isIntersecting) { revealModules(); io.disconnect(); } }, { threshold: 0.05 }); io.observe(modulesViewport); } else if (modulesViewport) { window.addEventListener('scroll', function onScroll() { if (window.scrollY > window.innerHeight * 0.3) { revealModules(); window.removeEventListener('scroll', onScroll); } }, { passive: true }); }
-
-      /* ---- 任务 ---- */
       on('task-form','submit', (event) => { event.preventDefault(); const title = $('task-title-input') ? $('task-title-input').value.trim() : ''; if (!title) return; tasks.unshift(normalizeTask({ id:uid(), text:title, notes:$('task-notes-input') ? $('task-notes-input').value.trim() : '', priority:$('task-priority-input') ? $('task-priority-input').value : 'medium', dueDate:$('task-due-input') ? $('task-due-input').value : '', tags:$('task-tags-input') ? $('task-tags-input').value.split(',').map((x) => x.trim()).filter(Boolean) : [], completed:false })); persist(); renderTasks(); if (event.target) event.target.reset(); if ($('task-priority-input')) $('task-priority-input').value = 'medium'; openTaskForm(false); });
       on('new-task-toggle','click', () => { const f = $('task-form'); openTaskForm(!(f && f.classList.contains('open'))); });
       on('cancel-task','click', () => openTaskForm(false));
@@ -1144,15 +1013,14 @@
       on('task-list','dragend', (event) => { event.target.closest('.task-card')?.classList.remove('dragging'); finishDrag(); });
       on('task-list','dragover', (event) => { event.preventDefault(); const over = event.target.closest('.task-card'); if (!over || !draggedId || over.dataset.id === draggedId) return; clearDropMarkers(); const rect = over.getBoundingClientRect(); const after = event.clientY > rect.top + rect.height / 2; over.classList.add(after ? 'drop-after' : 'drop-before'); dragTargetId = over.dataset.id; });
       on('task-list','drop', (event) => { event.preventDefault(); const over = event.target.closest('.task-card'); if (!over || !draggedId || over.dataset.id === draggedId) return finishDrag(); const from = tasks.findIndex((task) => task.id === draggedId); const to = tasks.findIndex((task) => task.id === over.dataset.id); if (from < 0 || to < 0) return finishDrag(); const rect = over.getBoundingClientRect(); const insertAfter = event.clientY > rect.top + rect.height / 2; const [item] = tasks.splice(from,1); let insertAt = to + (insertAfter ? 1 : 0); if (from < insertAt) insertAt -= 1; tasks.splice(Math.max(0,Math.min(insertAt,tasks.length)),0,item); persist(); renderTasks(); requestAnimationFrame(() => document.querySelector(`.task-card[data-id="${item.id}"]`)?.classList.add('just-moved')); finishDrag(); });
-      on('export-btn','click', () => { const payload = { version:3, exportedAt:new Date().toISOString(), tasks, certs, checkins, countdowns, pomodoro, mindmaps:{ maps:mindmaps, currentMapId:mmCurrentId, endpoint:mmApiEndpoint }, dual, mistakes, vocab }; const blob = new Blob([JSON.stringify(payload,null,2)], { type:'application/json' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `focus-list-backup-${new Date().toISOString().slice(0,10)}.json`; link.click(); URL.revokeObjectURL(link.href); });
+      on('export-btn','click', () => { const payload = { version:3, exportedAt:new Date().toISOString(), tasks, certs, checkins, countdowns, pomodoro, mindmaps:{ maps:mindmaps, currentMapId:mmCurrentId, endpoint:mmApiEndpoint }, dual, mistakes, vocab, careers }; const blob = new Blob([JSON.stringify(payload,null,2)], { type:'application/json' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `focus-list-backup-${new Date().toISOString().slice(0,10)}.json`; link.click(); URL.revokeObjectURL(link.href); });
       on('import-btn','click', () => { const f = $('import-file'); if (f) f.click(); });
-      on('import-file','change', (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const payload = JSON.parse(reader.result); const imported = Array.isArray(payload) ? payload : payload.tasks; if (!Array.isArray(imported)) throw new Error('invalid'); tasks = imported.map(normalizeTask); if (!Array.isArray(payload)) { if (Array.isArray(payload.certs)) certs = payload.certs; if (payload.checkins && typeof payload.checkins === 'object') checkins = payload.checkins; if (Array.isArray(payload.countdowns)) countdowns = payload.countdowns; if (payload.pomodoro && typeof payload.pomodoro === 'object') pomodoro = {...pomodoro,...payload.pomodoro}; if (payload.mindmaps && Array.isArray(payload.mindmaps.maps)) { mindmaps = payload.mindmaps.maps; mmCurrentId = payload.mindmaps.currentMapId; mmApiEndpoint = payload.mindmaps.endpoint || ''; if (!mindmaps.some((m) => m.id === mmCurrentId)) mmCurrentId = mindmaps[0]?.id || null; } if (payload.dual) { dual = { identity: payload.dual.identity === 'B' ? 'B' : 'A', skin: ['cinnamoroll','kuromi','kitty'].includes(payload.dual.skin) ? payload.dual.skin : 'cinnamoroll', posts: Array.isArray(payload.dual.posts) ? payload.dual.posts : [] }; } if (Array.isArray(payload.mistakes)) mistakes = payload.mistakes; if (Array.isArray(payload.vocab)) vocab = payload.vocab; } persist(); persistMindMaps(); persistDual(); renderTasks(); renderCerts(); renderCalendar(); renderCountdowns(); renderPomodoro(); renderMindMap(); renderDual(); renderMistakes(); renderVocab(); renderIntegral(); alert('备份恢复成功'); } catch { alert('无法读取备份文件，请选择有效的 JSON 备份。'); } if (event.target) event.target.value = ''; }; reader.readAsText(file); });
+      on('import-file','change', (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const payload = JSON.parse(reader.result); const imported = Array.isArray(payload) ? payload : payload.tasks; if (!Array.isArray(imported)) throw new Error('invalid'); tasks = imported.map(normalizeTask); if (!Array.isArray(payload)) { if (Array.isArray(payload.certs)) certs = payload.certs; if (payload.checkins && typeof payload.checkins === 'object') checkins = payload.checkins; if (Array.isArray(payload.countdowns)) countdowns = payload.countdowns; if (payload.pomodoro && typeof payload.pomodoro === 'object') pomodoro = {...pomodoro,...payload.pomodoro}; if (payload.mindmaps && Array.isArray(payload.mindmaps.maps)) { mindmaps = payload.mindmaps.maps; mmCurrentId = payload.mindmaps.currentMapId; mmApiEndpoint = payload.mindmaps.endpoint || ''; if (!mindmaps.some((m) => m.id === mmCurrentId)) mmCurrentId = mindmaps[0]?.id || null; } if (payload.dual) { dual = { identity: payload.dual.identity === 'B' ? 'B' : 'A', skin: ['cinnamoroll','kuromi','kitty'].includes(payload.dual.skin) ? payload.dual.skin : 'cinnamoroll', posts: Array.isArray(payload.dual.posts) ? payload.dual.posts : [] }; } if (Array.isArray(payload.mistakes)) mistakes = payload.mistakes; if (Array.isArray(payload.vocab)) vocab = payload.vocab; if (Array.isArray(payload.careers)) careers = payload.careers.map(normalizeCareer); } persist(); persistMindMaps(); persistDual(); persistCareers(); renderTasks(); renderCerts(); renderCalendar(); renderCountdowns(); renderPomodoro(); renderMindMap(); renderDual(); renderMistakes(); renderVocab(); renderCareers(); renderIntegral(); alert('备份恢复成功'); } catch { alert('无法读取备份文件，请选择有效的 JSON 备份。'); } if (event.target) event.target.value = ''; }; reader.readAsText(file); });
       on('new-cert-toggle','click', () => { const f = $('cert-form'); openCertForm(!(f && f.classList.contains('open'))); });
       on('cancel-cert','click', () => openCertForm(false));
       on('cert-form','submit', (event) => { event.preventDefault(); certs.push({ id:uid(), name:$('cert-name-input') ? $('cert-name-input').value.trim() : '', desc:$('cert-desc-input') ? $('cert-desc-input').value.trim() : '', time:$('cert-time-input') ? $('cert-time-input').value.trim() : '', difficulty:Number($('cert-difficulty-input') ? $('cert-difficulty-input').value : 3), status:'todo' }); persist(); renderCerts(); if (event.target) event.target.reset(); if ($('cert-difficulty-input')) $('cert-difficulty-input').value = '3'; openCertForm(false); });
       on('cert-list','click', (event) => { const card = event.target.closest('.cert-card'); if (!card) return; const cert = certs.find((item) => item.id === card.dataset.certId); if (!cert) return; const action = event.target.closest('[data-cert-action]')?.dataset.certAction; if (action === 'toggle') { cert.status = cert.status === 'done' ? 'todo' : 'done'; persist(); renderCerts(); } if (action === 'task') addGeneratedTask(cert); });
       document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => { setView(tab.dataset.view); revealModules(); scrollToModules(); }));
-      /* ---- 签到（仅当天可签） ---- */
       on('calendar-prev','click', () => { calendarCursor = new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1); renderCalendar(); });
       on('calendar-next','click', () => { calendarCursor = new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+1,1); renderCalendar(); });
       on('calendar-grid','click', (event) => { const cell = event.target.closest('.day-cell'); if (cell) openCheckin(cell.dataset.date); });
@@ -1173,80 +1041,33 @@
       on('pomodoro-start','click', () => { if (pomodoroTimer) stopPomodoro(); else { if (pomodoro.seconds <= 0) pomodoro.seconds = (pomodoro.mode === 'work' ? pomodoro.work : pomodoro.break) * 60; pomodoroTimer = setInterval(tickPomodoro,1000); } renderPomodoro(); });
       on('pomodoro-reset','click', () => { stopPomodoro(); pomodoro.mode = 'work'; pomodoro.seconds = pomodoro.work * 60; persist(); renderPomodoro(); });
       ['work-minutes','break-minutes'].forEach((id) => { const el = $(id); if (!el) return; el.addEventListener('change', (event) => { const value = Math.max(1,Math.min(Number(event.target.value) || 1,id === 'work-minutes' ? 120 : 60)); if (id === 'work-minutes') pomodoro.work = value; else pomodoro.break = value; if (!pomodoroTimer) pomodoro.seconds = (pomodoro.mode === 'work' ? pomodoro.work : pomodoro.break) * 60; persist(); renderPomodoro(); }); });
-      /* ---- 双人空间（v3 · 气泡 + 三丽鸥皮肤） ---- */
+      /* ---- 生涯规划 ---- */
+      on('career-new-toggle','click', () => { editingCareerId = null; if ($('career-title-input')) $('career-title-input').value = ''; if ($('career-desc-input')) $('career-desc-input').value = ''; const f = $('career-form'); openCareerForm(!(f && f.classList.contains('open'))); });
+      on('career-cancel','click', () => openCareerForm(false));
+      on('career-form','submit', (event) => { event.preventDefault(); const title = $('career-title-input') ? $('career-title-input').value.trim() : ''; if (!title) return; const desc = $('career-desc-input') ? $('career-desc-input').value.trim() : ''; if (editingCareerId) { const idx = careers.findIndex((c) => c.id === editingCareerId); if (idx >= 0) { careers[idx].title = title; careers[idx].desc = desc; } editingCareerId = null; } else { const c = { id: uid(), title, desc, ts: Date.now(), steps: [] }; careers.push(c); careerCurrentId = c.id; } persistCareers(); renderCareers(); if (event.target) event.target.reset(); openCareerForm(false); });
+      on('career-import-toggle','click', () => { const p = $('career-import-panel'); if (p) p.classList.toggle('open'); });
+      on('career-import-close','click', () => { const p = $('career-import-panel'); if (p) p.classList.remove('open'); if ($('career-import-text')) $('career-import-text').value = ''; });
+      on('career-import-apply','click', () => { const text = $('career-import-text') ? $('career-import-text').value.trim() : ''; if (!text) { alert('请先粘贴你的规划文本。'); return; } const parsed = parseCareerText(text); if (!parsed || !parsed.steps.length) { alert('未识别到任何行动步骤，请检查格式。'); return; } careers.push({ id: uid(), title: parsed.title, desc: parsed.desc, ts: Date.now(), steps: parsed.steps }); careerCurrentId = careers[careers.length - 1].id; persistCareers(); renderCareers(); const p = $('career-import-panel'); if (p) p.classList.remove('open'); if ($('career-import-text')) $('career-import-text').value = ''; alert(`导入成功：${parsed.title}（${parsed.steps.length} 个步骤）`); });
+      on('career-import-file-btn','click', () => { const f = $('career-import-file'); if (f) f.click(); });
+      on('career-import-file','change', (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const data = JSON.parse(reader.result); const items = Array.isArray(data) ? data : (data && Array.isArray(data.careers) ? data.careers : null); if (!items) throw new Error('no careers'); const count = importCareersFromArray(items); if (count) { persistCareers(); renderCareers(); alert(`导入成功：${count} 份生涯规划`); } else { alert('文件内没有可导入的规划。'); } } catch { alert('无法解析 JSON 文件，请确认是规划数组或备份文件。'); } if (event.target) event.target.value = ''; }; reader.readAsText(file); });
+      on('career-list','click', (event) => { const card = event.target.closest('.career-card'); if (!card) return; careerCurrentId = card.dataset.careerId; renderCareers(); });
+      on('career-edit','click', () => { const c = currentCareer(); if (!c) return; editingCareerId = c.id; if ($('career-title-input')) $('career-title-input').value = c.title; if ($('career-desc-input')) $('career-desc-input').value = c.desc; const f = $('career-form'); openCareerForm(!(f && f.classList.contains('open'))); });
+      on('career-delete','click', () => { const c = currentCareer(); if (!c || !confirm(`删除规划「${c.title}」？其全部步骤也会一并删除。`)) return; careers = careers.filter((x) => x.id !== c.id); if (careerCurrentId === c.id) careerCurrentId = null; editingCareerId = null; persistCareers(); renderCareers(); });
+      on('career-step-toggle','click', () => { if (editingCareerStepId) { const c = currentCareer(); const s = c && c.steps.find((x) => x.id === editingCareerStepId); if (s) { if ($('career-step-text-input')) $('career-step-text-input').value = s.text; if ($('career-step-group-input')) $('career-step-group-input').value = s.group; if ($('career-step-due-input')) $('career-step-due-input').value = s.due; if ($('career-step-note-input')) $('career-step-note-input').value = s.note; } else editingCareerStepId = null; } if (!editingCareerStepId) { if ($('career-step-text-input')) $('career-step-text-input').value = ''; if ($('career-step-group-input')) $('career-step-group-input').value = ''; if ($('career-step-due-input')) $('career-step-due-input').value = ''; if ($('career-step-note-input')) $('career-step-note-input').value = ''; } const f = $('career-step-form'); openCareerStepForm(!(f && f.classList.contains('open'))); });
+      on('career-step-cancel','click', () => openCareerStepForm(false));
+      on('career-step-form','submit', (event) => { event.preventDefault(); const c = currentCareer(); if (!c) return; const text = $('career-step-text-input') ? $('career-step-text-input').value.trim() : ''; if (!text) return; const group = $('career-step-group-input') ? $('career-step-group-input').value.trim() : ''; const due = $('career-step-due-input') ? $('career-step-due-input').value : ''; const note = $('career-step-note-input') ? $('career-step-note-input').value.trim() : ''; if (editingCareerStepId) { const idx = c.steps.findIndex((s) => s.id === editingCareerStepId); if (idx >= 0) c.steps[idx] = { ...c.steps[idx], text, group, due, note }; editingCareerStepId = null; } else c.steps.push({ id: uid(), text, group, due, note, done: false, ts: Date.now() }); persistCareers(); renderCareers(); openCareerStepForm(false); });
+      on('career-steps','change', (event) => { if (!event.target.matches('input[type="checkbox"]')) return; const row = event.target.closest('.career-step'); const c = currentCareer(); if (!row || !c) return; const s = c.steps.find((x) => x.id === row.dataset.csId); if (s) { s.done = event.target.checked; persistCareers(); renderCareers(); } });
+      on('career-steps','click', (event) => { const row = event.target.closest('.career-step'); const c = currentCareer(); if (!row || !c) return; const s = c.steps.find((x) => x.id === row.dataset.csId); if (!s) return; if (event.target.closest('.career-step-delete')) { c.steps = c.steps.filter((x) => x.id !== s.id); persistCareers(); renderCareers(); } if (event.target.closest('.career-step-edit')) { editingCareerStepId = s.id; if ($('career-step-text-input')) $('career-step-text-input').value = s.text; if ($('career-step-group-input')) $('career-step-group-input').value = s.group; if ($('career-step-due-input')) $('career-step-due-input').value = s.due; if ($('career-step-note-input')) $('career-step-note-input').value = s.note; const f = $('career-step-form'); if (f) f.classList.add('open'); const t = $('career-step-text-input'); if (t) t.focus(); } });
+      /* ---- 双人空间 ---- */
       on('dual-new-post','click', () => { const f = $('dual-form'); openDualForm(!(f && f.classList.contains('open'))); });
       on('dual-cancel','click', () => { const form = $('dual-form'); if (form) form.classList.remove('open'); });
-      on('dual-image-input','change', async (event) => {
-        const file = event.target.files && event.target.files[0];
-        const prev = $('dual-image-preview'); const img = $('dual-image-preview-img');
-        if (!file) { dualImageFile = null; if (prev) prev.style.display = 'none'; return; }
-        dualImageFile = await compressImage(file);
-        if (img) {
-          const reader = new FileReader();
-          reader.onload = (e) => { img.src = e.target.result; if (prev) prev.style.display = 'block'; };
-          reader.readAsDataURL(dualImageFile);
-        }
-      });
-      on('dual-image-clear','click', () => {
-        dualImageFile = null;
-        const inp = $('dual-image-input'); if (inp) inp.value = '';
-        const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none';
-      });
-      on('dual-form','submit', async (event) => {
-        event.preventDefault();
-        const text = $('dual-text') ? $('dual-text').value.trim() : '';
-        if (!text && !dualMoodSel && !dualStickerSel && !dualImageFile) return;
-        const author = dual.identity; // 已云端同步：无需再选择“这条是谁写的”
-        const submitBtn = event.target.querySelector('button[type="submit"]');
-        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '发送中…'; }
-        let image_url = '';
-        if (dualImageFile) image_url = await uploadPostImage(dualImageFile);
-        const sb = ensureSupabase();
-        if (editingDualId) {
-          const idx = dual.posts.findIndex((p) => p.id === editingDualId);
-          if (idx >= 0) {
-            const old = dual.posts[idx];
-            dual.posts[idx] = { ...old, text, mood: dualMoodSel, sticker: dualStickerSel, image_url: image_url || old.image_url };
-          }
-          if (sb) sb.from('dual_posts').update({ text, mood: dualMoodSel, sticker: dualStickerSel, image_url: image_url || null }).eq('id', editingDualId).then(({ error }) => { if (error) console.warn('[恋学] 云端编辑失败', error); });
-          editingDualId = null; persistDual(); renderDual();
-        } else {
-          const post = { id: uid(), author, text, mood: dualMoodSel, sticker: dualStickerSel, image_url, ts: Date.now() };
-          await publishDualPost(post);
-        }
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '发送 💌'; }
-        const form = $('dual-form'); if (form) form.classList.remove('open');
-        if ($('dual-text')) $('dual-text').value = '';
-        const inp = $('dual-image-input'); if (inp) inp.value = '';
-        const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none';
-        dualImageFile = null; dualMoodSel = ''; dualStickerSel = '';
-      });
-      on('dual-list','click', (event) => {
-        const imgEl = event.target.closest('.dual-bubble-media img');
-        if (imgEl) { openImageViewer(imgEl.getAttribute('src')); return; }
-        const row = event.target.closest('.dual-row'); if (!row) return;
-        const post = dual.posts.find((p) => p.id === row.dataset.dualId); if (!post) return;
-        if (event.target.closest('.dual-delete')) {
-          const sb = ensureSupabase();
-          if (sb) {
-            sb.from('dual_posts').delete().eq('id', post.id).then(({ error }) => { if (error) console.warn('[恋学] 云端删除失败（仅本地删除）', error); });
-            if (post.image_url) { const path = post.image_url.split('/dual-images/')[1]; if (path) sb.storage.from('dual-images').remove([path]).catch(() => {}); }
-          }
-          dual.posts = dual.posts.filter((p) => p.id !== post.id); persistDual(); renderDual();
-        }
-        if (event.target.closest('.dual-edit')) {
-          editingDualId = post.id; dualMoodSel = post.mood; dualStickerSel = post.sticker;
-          if ($('dual-text')) $('dual-text').value = post.text;
-          const form = $('dual-form'); if (form) form.classList.add('open');
-          renderDual(); const t = $('dual-text'); if (t) t.focus();
-        }
-      });
+      on('dual-image-input','change', async (event) => { const file = event.target.files && event.target.files[0]; const prev = $('dual-image-preview'); const img = $('dual-image-preview-img'); if (!file) { dualImageFile = null; if (prev) prev.style.display = 'none'; return; } dualImageFile = await compressImage(file); if (img) { const reader = new FileReader(); reader.onload = (e) => { img.src = e.target.result; if (prev) prev.style.display = 'block'; }; reader.readAsDataURL(dualImageFile); } });
+      on('dual-image-clear','click', () => { dualImageFile = null; const inp = $('dual-image-input'); if (inp) inp.value = ''; const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none'; });
+      on('dual-form','submit', async (event) => { event.preventDefault(); const text = $('dual-text') ? $('dual-text').value.trim() : ''; if (!text && !dualMoodSel && !dualStickerSel && !dualImageFile) return; const author = dual.identity; const submitBtn = event.target.querySelector('button[type="submit"]'); if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '发送中…'; } let image_url = ''; if (dualImageFile) image_url = await uploadPostImage(dualImageFile); const sb = ensureSupabase(); if (editingDualId) { const idx = dual.posts.findIndex((p) => p.id === editingDualId); if (idx >= 0) { const old = dual.posts[idx]; dual.posts[idx] = { ...old, text, mood: dualMoodSel, sticker: dualStickerSel, image_url: image_url || old.image_url }; } if (sb) sb.from('dual_posts').update({ text, mood: dualMoodSel, sticker: dualStickerSel, image_url: image_url || null }).eq('id', editingDualId).then(({ error }) => { if (error) console.warn('[恋学] 云端编辑失败', error); }); editingDualId = null; persistDual(); renderDual(); } else { const post = { id: uid(), author, text, mood: dualMoodSel, sticker: dualStickerSel, image_url, ts: Date.now() }; await publishDualPost(post); } if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '发送 💌'; } const form = $('dual-form'); if (form) form.classList.remove('open'); if ($('dual-text')) $('dual-text').value = ''; const inp = $('dual-image-input'); if (inp) inp.value = ''; const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none'; dualImageFile = null; dualMoodSel = ''; dualStickerSel = ''; });
+      on('dual-list','click', (event) => { const imgEl = event.target.closest('.dual-bubble-media img'); if (imgEl) { openImageViewer(imgEl.getAttribute('src')); return; } const row = event.target.closest('.dual-row'); if (!row) return; const post = dual.posts.find((p) => p.id === row.dataset.dualId); if (!post) return; if (event.target.closest('.dual-delete')) { const sb = ensureSupabase(); if (sb) { sb.from('dual_posts').delete().eq('id', post.id).then(({ error }) => { if (error) console.warn('[恋学] 云端删除失败（仅本地删除）', error); }); if (post.image_url) { const path = post.image_url.split('/dual-images/')[1]; if (path) sb.storage.from('dual-images').remove([path]).catch(() => {}); } } dual.posts = dual.posts.filter((p) => p.id !== post.id); persistDual(); renderDual(); } if (event.target.closest('.dual-edit')) { editingDualId = post.id; dualMoodSel = post.mood; dualStickerSel = post.sticker; if ($('dual-text')) $('dual-text').value = post.text; const form = $('dual-form'); if (form) form.classList.add('open'); renderDual(); const t = $('dual-text'); if (t) t.focus(); } });
       on('dual-mood-options','click', (event) => { const btn = event.target.closest('.mood-btn'); if (!btn) return; dualMoodSel = dualMoodSel === btn.dataset.mood ? '' : btn.dataset.mood; renderDual(); });
       on('dual-sticker-options','click', (event) => { const btn = event.target.closest('.sticker-btn'); if (!btn) return; dualStickerSel = dualStickerSel === btn.dataset.sticker ? '' : btn.dataset.sticker; renderDual(); });
-      document.querySelector('.skin-selector').addEventListener('click', (event) => {
-        const btn = event.target.closest('.skin-btn'); if (!btn || !btn.dataset.skin) return;
-        dual.skin = btn.dataset.skin; persistDual(); renderDual();
-      });
+      document.querySelector('.skin-selector').addEventListener('click', (event) => { const btn = event.target.closest('.skin-btn'); if (!btn || !btn.dataset.skin) return; dual.skin = btn.dataset.skin; persistDual(); renderDual(); });
       on('image-viewer-close','click', closeImageViewer);
       on('image-viewer','click', (event) => { if (event.target.id === 'image-viewer') closeImageViewer(); });
       /* ---- 错题本 ---- */
@@ -1301,7 +1122,7 @@
       nextHeroIdiom(); dateLabel(); nextQuote(); fitQuoteText();
       window.addEventListener('resize', fitQuoteText);
       renderIntegral();
-      [renderTasks, renderCerts, renderCalendar, renderCountdowns, renderPomodoro, renderMindMap, renderDual, renderMistakes, renderVocab, renderHomeSummary].forEach((fn) => { try { fn(); } catch (e) { console.error('[恋学] 初始化渲染失败：', fn.name, e); } });
+      [renderTasks, renderCerts, renderCalendar, renderCountdowns, renderPomodoro, renderMindMap, renderDual, renderMistakes, renderVocab, renderCareers, renderHomeSummary].forEach((fn) => { try { fn(); } catch (e) { console.error('[恋学] 初始化渲染失败：', fn.name, e); } });
       setView('home'); setInterval(renderCountdowns,1000);
     })();
   </script>

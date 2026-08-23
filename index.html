@@ -12,18 +12,17 @@
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
   <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png" />
-  <!-- CDN：Three.js（async） -->
+  <!-- CDN：Three.js（async，不阻塞业务脚本） -->
   <style>
     /* =================================================================
-       恋学 v6.6 · 修复版
+       恋学 v6.7 · 最终完整版
        - 移除 Tailwind CDN（内联工具类替代）
        - Three.js 异步加载 + 自动降级
-       - 所有事件绑定全防御（缺失元素只跳过该模块）
-       - 所有存储写入安全包裹
+       - 所有事件绑定全防御；所有存储写入安全包裹
        - 大标题：内置励志/治愈/学习/热血四字成语，每次登录自动刷新
        - 今日一句：仅一行、不超卡片、无省略号（长句自动缩字号）
-       - Supabase 登录模块（可选增强）
-       - 双人空间：图片上传 + 实时同步（Realtime），云端失败回退本地
+       - Supabase 登录（可选增强）
+       - 双人空间：图片上传（前端压缩）+ Realtime 实时同步，断网回退本地
        ================================================================= */
     :root {
       --bg:#04070e; --bg-2:#0a0d16;
@@ -300,7 +299,7 @@
     .dual-emoji { font-size:26px; flex:none; line-height:1; }
     .dual-text { margin:0; flex:1 1 100%; font-size:14px; line-height:1.65; overflow-wrap:anywhere; white-space:pre-wrap; color:#fff; }
     .dual-media { margin-top:10px; }
-    .dual-media img { display:block; max-width:100%; max-height:260px; border-radius:12px; border:1px solid var(--glass-border); }
+    .dual-media img { display:block; max-width:100%; max-height:300px; border-radius:12px; border:1px solid var(--glass-border); object-fit:cover; }
     .dual-sync { margin-top:14px; padding:15px; }
     .dual-sync .field { margin-bottom:10px; }
 
@@ -336,7 +335,7 @@
     .app-shell { position:relative; width:100%; max-width:1080px; min-height:100vh; margin:0 auto; padding:16px 18px 56px; }
     .footer-note { margin:18px 0 0; color:var(--faint); font-size:11.5px; line-height:1.6; opacity:.96; }
 
-    /* ===== 内联工具类（替代 Tailwind CDN，防止外部脚本阻塞） ===== */
+    /* ===== 内联工具类（替代 Tailwind CDN） ===== */
     .relative{position:relative}.z-10{z-index:10}
     .flex{display:flex}.flex-1{flex:1 1 0%}.flex-col{flex-direction:column}
     .flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-center{justify-content:center}
@@ -354,14 +353,14 @@
   </style>
 </head>
 <body>
-  <!-- 背景：深蓝流体 canvas（最底层）→ 极淡扫描线 -->
+  <!-- 背景 -->
   <canvas id="fluid-canvas" aria-hidden="true"></canvas>
   <div class="bg-scanlines" aria-hidden="true"></div>
 
   <!-- 顶部导航 -->
   <nav class="workspace-nav" aria-label="工作区切换"><button class="tab active" data-view="home" type="button">首页</button><button class="tab" data-view="tasks" type="button">学习任务</button><button class="tab" data-view="mindmap" type="button">思维脑图</button><button class="tab" data-view="mistakes" type="button">错题本</button><button class="tab" data-view="vocab" type="button">英语生词</button><button class="tab" data-view="certs" type="button">证书备考</button><button class="tab" data-view="countdowns" type="button">备考倒计时</button><button class="tab" data-view="pomodoro" type="button">番茄专注</button><button class="tab" data-view="dual" type="button">双人空间</button></nav>
 
-  <!-- 悬浮设置按钮 + 磨砂面板 -->
+  <!-- 悬浮设置 -->
   <button id="bg-settings-btn" class="settings-fab" type="button" aria-label="界面设置" title="界面设置">⚙</button>
   <div id="bg-settings-panel" class="settings-drawer hidden" role="dialog" aria-label="界面设置">
     <div class="settings-head"><h3 class="settings-title">界面设置</h3><button id="bg-settings-close" class="mini-btn" type="button" aria-label="关闭">×</button></div>
@@ -372,7 +371,7 @@
     <p class="settings-copy">简约模式会关闭流体动态背景，只保留纯色深底，最适合专注阅读与复习。</p>
   </div>
 
-  <!-- ================= Hero 首屏（只保留两个按钮） ================= -->
+  <!-- ================= Hero ================= -->
   <section id="hero" class="hero">
     <div class="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pt-12 text-center">
       <p class="home-kicker mb-6">STUDY SPACE · 恋</p>
@@ -386,7 +385,7 @@
     <div class="scroll-hint"><button id="scroll-down-btn" type="button">往下滑 ↓</button></div>
   </section>
 
-  <!-- ================= 业务模块视口 ================= -->
+  <!-- ================= 业务模块 ================= -->
   <div id="modules-viewport" class="modules-hidden">
     <main class="app-shell" style="padding-top:96px">
       <header class="topbar">
@@ -522,7 +521,7 @@
               <div class="field full"><label for="dual-text">日常 / 留言</label><textarea id="dual-text" class="input" maxlength="500" placeholder="今天过得怎么样？告诉 TA…"></textarea></div>
               <div class="field full"><label>今天的心情</label><div id="dual-mood-options" class="mood-options"></div></div>
               <div class="field full"><label>挑个小贴纸</label><div id="dual-sticker-options" class="sticker-options"></div></div>
-              <div class="field full"><label for="dual-image-input">配图（可选）</label><input id="dual-image-input" class="input" type="file" accept="image/*" style="padding:8px" /></div>
+              <div class="field full"><label for="dual-image-input">配图（可选，自动压缩后上传）</label><input id="dual-image-input" class="input" type="file" accept="image/*" style="padding:8px" /></div>
               <div class="field full" id="dual-image-preview" style="display:none"><img id="dual-image-preview-img" alt="预览" style="max-width:100%;max-height:220px;border-radius:12px;border:1px solid var(--glass-border)" /><button id="dual-image-clear" type="button" class="btn btn-quiet" style="min-height:32px;font-size:12px">移除图片</button></div>
             </div>
             <div class="composer-actions"><button id="dual-cancel" class="btn btn-quiet" type="button">取消</button><button class="btn btn-primary" type="submit">发送</button></div>
@@ -536,9 +535,9 @@
           <div id="dual-list" class="dual-list"></div>
           <div id="dual-empty" class="empty-state hidden"><div class="glass-soft empty-icon">💌</div><p class="panel-title" style="font-size:16px">还没有日常记录</p><p>写下今天的小事，或传一张照片给 TA。</p></div>
           <div id="dual-sync-panel" class="glass-soft dual-sync hidden">
-            <p class="panel-copy" style="margin-top:0">已接入云端实时同步（需先建双人空间数据表）。也可以填一个自定义同步地址作为备用：</p>
+            <p class="panel-copy" style="margin-top:0">已接入云端实时同步；也可填一个备用同步地址：</p>
             <div class="field"><label for="dual-sync-url">同步地址（可选）</label><input id="dual-sync-url" class="input" placeholder="https://你的同步服务/posts" /></div>
-            <p class="panel-copy">不填则走 Supabase 实时同步；断网时自动回退本地并等待恢复。</p>
+            <p class="panel-copy">不填则走 Supabase 实时同步；断网时自动回退本地。</p>
             <div class="composer-actions"><button id="dual-sync-close" class="btn btn-primary" type="button">完成</button></div>
           </div>
         </div>
@@ -548,7 +547,7 @@
     </main>
   </div>
 
-  <!-- ======= 登录弹窗（可选增强） ======= -->
+  <!-- ======= 登录弹窗 ======= -->
   <div id="auth-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
     <form id="auth-form" class="modal-card">
       <div class="modal-head"><h2 id="auth-title" class="modal-title">登录</h2><button id="auth-close" type="button" class="icon-btn" aria-label="关闭">×</button></div>
@@ -587,119 +586,57 @@
     </form>
   </div>
 
-  <!-- CDN：Three.js（async，绝不阻塞业务脚本） -->
+  <!-- CDN：Three.js（async） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" async></script>
-  <!-- CDN：Supabase SDK（登录 + 实时） -->
+  <!-- CDN：Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    /* =================================================================
-       [背景系统] Three.js 深蓝流体 — v6.6：就绪才启动，失败自动降级
-       ================================================================= */
+    /* ===== 背景系统（同 v6.6，无改动） ===== */
     (function () {
       var KEY = 'focus-list-bg-settings-v1';
       var canvas = document.getElementById('fluid-canvas');
       if (!canvas) return;
       var saved = null;
       try { saved = JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { saved = null; }
-      var S = {
-        intensity: saved && typeof saved.intensity === 'number' ? saved.intensity : 60,
-        speed: saved && typeof saved.speed === 'number' ? saved.speed : 70,
-        scan: saved ? saved.scan !== false : true,
-        simple: saved ? !!saved.simple : false
-      };
-      function disableBg() {
-        canvas.style.display = 'none';
-        document.documentElement.classList.add('simple-mode');
-        var scanEl = document.querySelector('.bg-scanlines'); if (scanEl) scanEl.style.display = 'none';
-      }
+      var S = { intensity: saved && typeof saved.intensity === 'number' ? saved.intensity : 60, speed: saved && typeof saved.speed === 'number' ? saved.speed : 70, scan: saved ? saved.scan !== false : true, simple: saved ? !!saved.simple : false };
+      function disableBg() { canvas.style.display = 'none'; document.documentElement.classList.add('simple-mode'); var scanEl = document.querySelector('.bg-scanlines'); if (scanEl) scanEl.style.display = 'none'; }
       function initBg() {
         if (!window.THREE) return false;
         var mobile = window.matchMedia('(max-width:700px)').matches;
         var OCT = mobile ? 3 : 4;
-        var scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x03050c);
-        var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
-        camera.position.z = 1;
+        var scene = new THREE.Scene(); scene.background = new THREE.Color(0x03050c);
+        var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10); camera.position.z = 1;
         var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, powerPreference: 'low-power' });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1 : 2));
         renderer.setSize(window.innerWidth, window.innerHeight, false);
         var frag =
           'precision highp float;' +
-          'uniform vec2 u_res;' +
-          'uniform float u_time;' +
-          'uniform float u_intensity;' +
-          'uniform float u_speed;' +
-          'uniform vec2 u_mouse;' +
-          'uniform int u_oct;' +
+          'uniform vec2 u_res;' + 'uniform float u_time;' + 'uniform float u_intensity;' + 'uniform float u_speed;' + 'uniform vec2 u_mouse;' + 'uniform int u_oct;' +
           'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}' +
-          'float noise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);f=f*f*(3.0-2.0*f);' +
-          'float a=hash(i);float b=hash(i+vec2(1.0,0.0));float c=hash(i+vec2(0.0,1.0));float d=hash(i+vec2(1.0,1.0));' +
-          'return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);}' +
-          'float fbm(vec2 p){float v=0.0;float a=0.5;' +
-          'for(int i=0;i<4;i++){if(i>=u_oct)break;v+=a*noise(p);p*=2.03;a*=0.5;}return v;}' +
-          'void main(){' +
-          'vec2 uv=gl_FragCoord.xy/u_res.xy;' +
-          'vec2 p=uv*3.2;' +
-          'float t=u_time*0.05*u_speed;' +
-          'vec2 dm=uv-u_mouse;' +
-          'float md=length(dm);' +
-          'p+=dm*0.20*exp(-md*5.5);' +
-          'vec2 q=vec2(fbm(p+t*0.22),fbm(p+vec2(5.2,1.3)-t*0.19));' +
-          'vec2 r=vec2(fbm(p+1.7*q+vec2(1.7,9.2)+t*0.16),fbm(p+1.7*q+vec2(8.3,2.8)-t*0.14));' +
-          'float f=fbm(p+1.7*r+vec2(0.0,t*0.06));' +
-          'float s=smoothstep(0.40,0.60,f);' +
-          'vec3 deep=vec3(0.005,0.009,0.020);' +
-          'vec3 blue=vec3(0.075,0.140,0.320);' +
-          'vec3 purple=vec3(0.110,0.065,0.260);' +
-          'vec3 col=deep;' +
-          'col=mix(col,blue,s*0.55);' +
-          'col+=purple*smoothstep(0.55,0.80,f)*0.18;' +
-          'col+=vec3(0.025,0.060,0.120)*smoothstep(0.62,0.84,f)*0.35;' +
-          'col*=u_intensity;' +
-          'gl_FragColor=vec4(col,1.0);}';
+          'float noise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);f=f*f*(3.0-2.0*f);float a=hash(i);float b=hash(i+vec2(1.0,0.0));float c=hash(i+vec2(0.0,1.0));float d=hash(i+vec2(1.0,1.0));return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);}' +
+          'float fbm(vec2 p){float v=0.0;float a=0.5;for(int i=0;i<4;i++){if(i>=u_oct)break;v+=a*noise(p);p*=2.03;a*=0.5;}return v;}' +
+          'void main(){vec2 uv=gl_FragCoord.xy/u_res.xy;vec2 p=uv*3.2;float t=u_time*0.05*u_speed;vec2 dm=uv-u_mouse;float md=length(dm);p+=dm*0.20*exp(-md*5.5);' +
+          'vec2 q=vec2(fbm(p+t*0.22),fbm(p+vec2(5.2,1.3)-t*0.19));vec2 r=vec2(fbm(p+1.7*q+vec2(1.7,9.2)+t*0.16),fbm(p+1.7*q+vec2(8.3,2.8)-t*0.14));float f=fbm(p+1.7*r+vec2(0.0,t*0.06));' +
+          'float s=smoothstep(0.40,0.60,f);vec3 deep=vec3(0.005,0.009,0.020);vec3 blue=vec3(0.075,0.140,0.320);vec3 purple=vec3(0.110,0.065,0.260);vec3 col=deep;' +
+          'col=mix(col,blue,s*0.55);col+=purple*smoothstep(0.55,0.80,f)*0.18;col+=vec3(0.025,0.060,0.120)*smoothstep(0.62,0.84,f)*0.35;col*=u_intensity;gl_FragColor=vec4(col,1.0);}';
         var geometry = new THREE.PlaneGeometry(2, 2);
         var material = new THREE.ShaderMaterial({
           vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position,1.0);}',
           fragmentShader: frag,
-          uniforms: {
-            u_res: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-            u_time: { value: 0 },
-            u_intensity: { value: S.intensity / 100 },
-            u_speed: { value: S.speed / 100 },
-            u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
-            u_oct: { value: OCT }
-          }
+          uniforms: { u_res: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }, u_time: { value: 0 }, u_intensity: { value: S.intensity / 100 }, u_speed: { value: S.speed / 100 }, u_mouse: { value: new THREE.Vector2(0.5, 0.5) }, u_oct: { value: OCT } }
         });
         scene.add(new THREE.Mesh(geometry, material));
         var mouseTarget = new THREE.Vector2(0.5, 0.5);
-        window.addEventListener('mousemove', function (e) {
-          mouseTarget.x = e.clientX / window.innerWidth;
-          mouseTarget.y = 1 - e.clientY / window.innerHeight;
-        }, { passive: true });
+        window.addEventListener('mousemove', function (e) { mouseTarget.x = e.clientX / window.innerWidth; mouseTarget.y = 1 - e.clientY / window.innerHeight; }, { passive: true });
         function applyUi() {
-          var scan = document.querySelector('.bg-scanlines');
-          if (scan) scan.style.display = S.scan && !S.simple ? '' : 'none';
+          var scan = document.querySelector('.bg-scanlines'); if (scan) scan.style.display = S.scan && !S.simple ? '' : 'none';
           canvas.style.display = S.simple ? 'none' : '';
           document.documentElement.classList.toggle('simple-mode', S.simple);
-          material.uniforms.u_intensity.value = S.intensity / 100;
-          material.uniforms.u_speed.value = S.speed / 100;
+          material.uniforms.u_intensity.value = S.intensity / 100; material.uniforms.u_speed.value = S.speed / 100;
         }
-        window.applyBgSettings = function (s) {
-          S.intensity = s.intensity; S.speed = s.speed; S.scan = s.scan !== false; S.simple = !!s.simple;
-          applyUi();
-          if (S.simple) { stopFast(); stopSlow(); render(); }
-          else if (document.hidden) { stopFast(); startSlow(); }
-          else { stopSlow(); startFast(); }
-        };
+        window.applyBgSettings = function (s) { S.intensity = s.intensity; S.speed = s.speed; S.scan = s.scan !== false; S.simple = !!s.simple; applyUi(); if (S.simple) { stopFast(); stopSlow(); render(); } else if (document.hidden) { stopFast(); startSlow(); } else { stopSlow(); startFast(); } };
         var last = performance.now();
-        function render() {
-          var now = performance.now();
-          var dt = Math.min(0.05, (now - last) / 1000); last = now;
-          var u = material.uniforms;
-          u.u_time.value += dt;
-          u.u_mouse.value.lerp(mouseTarget, 0.06);
-          renderer.render(scene, camera);
-        }
+        function render() { var now = performance.now(); var dt = Math.min(0.05, (now - last) / 1000); last = now; var u = material.uniforms; u.u_time.value += dt; u.u_mouse.value.lerp(mouseTarget, 0.06); renderer.render(scene, camera); }
         var rafId = null;
         function startFast() { if (!rafId && !document.hidden) rafId = requestAnimationFrame(loop); }
         function loop() { rafId = requestAnimationFrame(loop); render(); }
@@ -707,220 +644,95 @@
         var slowTimer = null;
         function startSlow() { if (!slowTimer) slowTimer = setInterval(render, 200); }
         function stopSlow() { if (slowTimer) { clearInterval(slowTimer); slowTimer = null; } }
-        document.addEventListener('visibilitychange', function () {
-          if (document.hidden) { stopFast(); if (!S.simple) startSlow(); }
-          else { stopSlow(); if (!S.simple) startFast(); }
-        });
-        window.addEventListener('resize', function () {
-          var w = window.innerWidth, h = window.innerHeight;
-          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1 : 2));
-          renderer.setSize(w, h, false);
-          material.uniforms.u_res.value.set(w, h);
-        });
+        document.addEventListener('visibilitychange', function () { if (document.hidden) { stopFast(); if (!S.simple) startSlow(); } else { stopSlow(); if (!S.simple) startFast(); } });
+        window.addEventListener('resize', function () { var w = window.innerWidth, h = window.innerHeight; renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1 : 2)); renderer.setSize(w, h, false); material.uniforms.u_res.value.set(w, h); });
         applyUi();
-        if (!S.simple) { if (document.hidden) startSlow(); else startFast(); }
-        else render();
+        if (!S.simple) { if (document.hidden) startSlow(); else startFast(); } else render();
         return true;
       }
       if (!initBg()) {
-        window.addEventListener('load', function () {
-          if (!initBg()) disableBg();
-        });
-        setTimeout(function () {
-          if (!window.THREE) disableBg();
-        }, 6000);
+        window.addEventListener('load', function () { if (!initBg()) disableBg(); });
+        setTimeout(function () { if (!window.THREE) disableBg(); }, 6000);
       }
     })();
   </script>
   <script>
-    /* =================================================================
-       [应用主逻辑] v6.6
-       - 事件绑定全防御；存储写入安全包裹
+    /* ================================================================
+       [应用主逻辑] v6.7
+       - 全防御绑定；安全存储写入
        - 大标题成语；今日一句自适应一行
        - Supabase 登录（可选）
-       - 双人空间：图片上传 + Realtime 实时同步，断网回退本地
-       ================================================================= */
+       - 双人空间：图片压缩上传 + 公共URL直拼 + Realtime实时同步
+       ================================================================ */
     (() => {
       const $ = (id) => { const el = document.getElementById(id); if (!el) console.warn('[恋学] 页面缺少元素 #' + id); return el; };
-      function on(id, evt, fn) {
-        const el = document.getElementById(id);
-        if (!el) { console.warn('[恋学] 跳过绑定：找不到 #' + id); return; }
-        el.addEventListener(evt, fn);
-      }
-      const TASK_KEY = 'focus-list-tasks-v1'; const CERT_KEY = 'focus-list-certs-v1'; const CHECKIN_KEY = 'focus-list-checkins-v1'; const CATEGORY_KEY = 'focus-list-checkin-categories-v1'; const COUNTDOWN_KEY = 'focus-list-countdowns-v1'; const POMO_KEY = 'focus-list-pomodoro-v1'; const MINDMAP_KEY = 'focus-list-mindmaps-v1'; const DUAL_KEY = 'focus-list-dual-v1'; const MISTAKE_KEY = 'focus-list-mistakes-v1'; const VOCAB_KEY = 'focus-list-vocab-v1'; const QUOTE_KEY = 'focus-list-quotes-v1'; const BG_SETTINGS_KEY = 'focus-list-bg-settings-v1';
+      function on(id, evt, fn) { const el = document.getElementById(id); if (!el) { console.warn('[恋学] 跳过绑定：找不到 #' + id); return; } el.addEventListener(evt, fn); }
+      const TASK_KEY='focus-list-tasks-v1'; const CERT_KEY='focus-list-certs-v1'; const CHECKIN_KEY='focus-list-checkins-v1'; const CATEGORY_KEY='focus-list-checkin-categories-v1'; const COUNTDOWN_KEY='focus-list-countdowns-v1'; const POMO_KEY='focus-list-pomodoro-v1'; const MINDMAP_KEY='focus-list-mindmaps-v1'; const DUAL_KEY='focus-list-dual-v1'; const MISTAKE_KEY='focus-list-mistakes-v1'; const VOCAB_KEY='focus-list-vocab-v1'; const QUOTE_KEY='focus-list-quotes-v1'; const BG_SETTINGS_KEY='focus-list-bg-settings-v1';
       function safeSet(key, val) { try { localStorage.setItem(key, val); } catch (e) { console.warn('[恋学] 存储写入失败，数据仅保留在内存', key); } }
       const CERT_URLS = { cet4:'https://www.ixuecheng.cn/home', cet6:'https://www.ixuecheng.cn/home', ncre2:'https://www.xiaoheiketang.com/personal/myCourse', 'accounting-junior':'https://www.zlketang.com/personal/index.html?name=1' };
+
       /* ===== Supabase 配置 ===== */
       const SUPABASE_URL = 'https://haqpfmfcqkgibipzqdxh.supabase.co';
       const SUPABASE_ANON_KEY = 'sb_publishable_Zl7mNHnNrXl2Y_rXQfxL8A_J2bIZpQE';
-      let supabaseClient = null;
-      let authMode = 'login';
-      let authUser = null;
-      function ensureSupabase() {
-        if (supabaseClient) return supabaseClient;
-        if (!window.supabase || !window.supabase.createClient) return null;
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-        });
-        return supabaseClient;
-      }
+      let supabaseClient = null; let authMode = 'login'; let authUser = null;
+      function ensureSupabase() { if (supabaseClient) return supabaseClient; if (!window.supabase || !window.supabase.createClient) return null; supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }); return supabaseClient; }
+
       /* ---- 登录 ---- */
-      function renderAuthArea() {
-        const area = $('auth-area');
-        if (!area) return;
-        if (!ensureSupabase()) { area.innerHTML = ''; return; }
-        if (authUser) {
-          const email = authUser.email || '已登录';
-          area.innerHTML = `<span class="pill" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeHtml(email)}">${escapeHtml(email)}</span><button id="auth-logout" type="button" class="btn glass-soft" style="min-height:36px;padding:0 12px;font-size:12px">退出</button>`;
-        } else {
-          area.innerHTML = `<button id="auth-open" type="button" class="btn glass-soft" style="min-height:36px;padding:0 12px;font-size:12px">登录</button>`;
-        }
-      }
-      function openAuth() {
-        const modal = $('auth-modal');
-        if (!modal || !ensureSupabase()) { console.warn('[恋学] Supabase 不可用，登录不可用'); return; }
-        authMode = 'login';
-        if ($('auth-title')) $('auth-title').textContent = '登录';
-        if ($('auth-switch')) $('auth-switch').textContent = '没有账号？去注册';
-        if ($('auth-submit')) $('auth-submit').textContent = '登录';
-        const errEl = $('auth-error'); if (errEl) { errEl.style.display = 'none'; errEl.style.color = 'var(--danger)'; }
-        const pw = $('auth-password'); if (pw) pw.autocomplete = 'current-password';
-        modal.classList.remove('hidden'); modal.classList.remove('closing');
-        const e = $('auth-email'); if (e) e.focus();
-      }
-      function closeAuth() {
-        const modal = $('auth-modal');
-        if (!modal || modal.classList.contains('hidden')) return;
-        modal.classList.add('closing');
-        setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('closing'); }, 200);
-      }
-      function switchAuthMode() {
-        authMode = authMode === 'login' ? 'signup' : 'login';
-        if ($('auth-title')) $('auth-title').textContent = authMode === 'login' ? '登录' : '注册新账号';
-        if ($('auth-switch')) $('auth-switch').textContent = authMode === 'login' ? '没有账号？去注册' : '已有账号？去登录';
-        if ($('auth-submit')) $('auth-submit').textContent = authMode === 'login' ? '登录' : '注册并登录';
-        if ($('auth-password')) $('auth-password').autocomplete = authMode === 'login' ? 'current-password' : 'new-password';
-        const errEl = $('auth-error'); if (errEl) { errEl.style.display = 'none'; errEl.style.color = 'var(--danger)'; }
-      }
-      async function handleAuthSubmit(event) {
-        event.preventDefault();
-        const sb = ensureSupabase();
-        if (!sb) return;
-        const email = $('auth-email') ? $('auth-email').value.trim() : '';
-        const password = $('auth-password') ? $('auth-password').value : '';
-        if (!email || !password) return;
-        const errEl = $('auth-error'); const submitBtn = $('auth-submit');
-        if (errEl) { errEl.style.display = 'none'; errEl.style.color = 'var(--danger)'; }
-        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '处理中…'; }
-        let res = null;
-        try {
-          if (authMode === 'login') res = await sb.auth.signInWithPassword({ email, password });
-          else res = await sb.auth.signUp({ email, password });
-        } catch (e) { res = { error: { message: e && e.message ? e.message : '网络异常，请稍后重试' } }; }
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = authMode === 'login' ? '登录' : '注册并登录'; }
-        if (res.error) {
-          if (errEl) { errEl.textContent = res.error.message || '操作失败，请稍后重试'; errEl.style.display = 'block'; }
-          return;
-        }
-        if (authMode === 'signup' && res.data && res.data.user && !res.data.session) {
-          if (errEl) { errEl.textContent = '注册成功！请前往邮箱完成验证后再登录。'; errEl.style.color = 'var(--low)'; errEl.style.display = 'block'; }
-          authMode = 'login';
-          if ($('auth-title')) $('auth-title').textContent = '登录';
-          if ($('auth-switch')) $('auth-switch').textContent = '没有账号？去注册';
-          if ($('auth-submit')) $('auth-submit').textContent = '登录';
-          return;
-        }
-        closeAuth();
-        if (event.target && event.target.reset) event.target.reset();
-      }
-      async function handleLogout() {
-        const sb = ensureSupabase();
-        if (!sb) return;
-        await sb.auth.signOut();
-        authUser = null;
-        renderAuthArea();
-      }
-      function initAuth() {
-        const sb = ensureSupabase();
-        if (!sb) { console.warn('[恋学] Supabase SDK 未加载，登录模块不可用（不影响其他功能）'); renderAuthArea(); return; }
-        sb.auth.getSession().then(({ data }) => {
-          authUser = (data && data.session && data.session.user) || null;
-          renderAuthArea();
-        }).catch(() => { renderAuthArea(); });
-        sb.auth.onAuthStateChange((event, session) => {
-          authUser = (session && session.user) || null;
-          renderAuthArea();
+      function renderAuthArea() { const area = $('auth-area'); if (!area) return; if (!ensureSupabase()) { area.innerHTML = ''; return; } if (authUser) { const email = authUser.email || '已登录'; area.innerHTML = `<span class="pill" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeHtml(email)}">${escapeHtml(email)}</span><button id="auth-logout" type="button" class="btn glass-soft" style="min-height:36px;padding:0 12px;font-size:12px">退出</button>`; } else { area.innerHTML = `<button id="auth-open" type="button" class="btn glass-soft" style="min-height:36px;padding:0 12px;font-size:12px">登录</button>`; } }
+      function openAuth() { const modal = $('auth-modal'); if (!modal || !ensureSupabase()) { console.warn('[恋学] Supabase 不可用，登录不可用'); return; } authMode = 'login'; if ($('auth-title')) $('auth-title').textContent = '登录'; if ($('auth-switch')) $('auth-switch').textContent = '没有账号？去注册'; if ($('auth-submit')) $('auth-submit').textContent = '登录'; const errEl = $('auth-error'); if (errEl) { errEl.style.display = 'none'; errEl.style.color = 'var(--danger)'; } const pw = $('auth-password'); if (pw) pw.autocomplete = 'current-password'; modal.classList.remove('hidden'); modal.classList.remove('closing'); const e = $('auth-email'); if (e) e.focus(); }
+      function closeAuth() { const modal = $('auth-modal'); if (!modal || modal.classList.contains('hidden')) return; modal.classList.add('closing'); setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('closing'); }, 200); }
+      function switchAuthMode() { authMode = authMode === 'login' ? 'signup' : 'login'; if ($('auth-title')) $('auth-title').textContent = authMode === 'login' ? '登录' : '注册新账号'; if ($('auth-switch')) $('auth-switch').textContent = authMode === 'login' ? '没有账号？去注册' : '已有账号？去登录'; if ($('auth-submit')) $('auth-submit').textContent = authMode === 'login' ? '登录' : '注册并登录'; if ($('auth-password')) $('auth-password').autocomplete = authMode === 'login' ? 'current-password' : 'new-password'; const errEl = $('auth-error'); if (errEl) { errEl.style.display = 'none'; errEl.style.color = 'var(--danger)'; } }
+      async function handleAuthSubmit(event) { event.preventDefault(); const sb = ensureSupabase(); if (!sb) return; const email = $('auth-email') ? $('auth-email').value.trim() : ''; const password = $('auth-password') ? $('auth-password').value : ''; if (!email || !password) return; const errEl = $('auth-error'); const submitBtn = $('auth-submit'); if (errEl) { errEl.style.display = 'none'; errEl.style.color = 'var(--danger)'; } if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '处理中…'; } let res = null; try { if (authMode === 'login') res = await sb.auth.signInWithPassword({ email, password }); else res = await sb.auth.signUp({ email, password }); } catch (e) { res = { error: { message: e && e.message ? e.message : '网络异常，请稍后重试' } }; } if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = authMode === 'login' ? '登录' : '注册并登录'; } if (res.error) { if (errEl) { errEl.textContent = res.error.message || '操作失败，请稍后重试'; errEl.style.display = 'block'; } return; } if (authMode === 'signup' && res.data && res.data.user && !res.data.session) { if (errEl) { errEl.textContent = '注册成功！请前往邮箱完成验证后再登录。'; errEl.style.color = 'var(--low)'; errEl.style.display = 'block'; } authMode = 'login'; if ($('auth-title')) $('auth-title').textContent = '登录'; if ($('auth-switch')) $('auth-switch').textContent = '没有账号？去注册'; if ($('auth-submit')) $('auth-submit').textContent = '登录'; return; } closeAuth(); if (event.target && event.target.reset) event.target.reset(); }
+      async function handleLogout() { const sb = ensureSupabase(); if (!sb) return; await sb.auth.signOut(); authUser = null; renderAuthArea(); }
+      function initAuth() { const sb = ensureSupabase(); if (!sb) { console.warn('[恋学] Supabase SDK 未加载，登录模块不可用（不影响其他功能）'); renderAuthArea(); return; } sb.auth.getSession().then(({ data }) => { authUser = (data && data.session && data.session.user) || null; renderAuthArea(); }).catch(() => { renderAuthArea(); }); sb.auth.onAuthStateChange((event, session) => { authUser = (session && session.user) || null; renderAuthArea(); }); }
+
+      /* ---- 双人空间：图片压缩上传 + 实时同步 ---- */
+      let dualChannel = null; let dualImageFile = null;
+      function dualPostFromRow(r) { return { id: r.id, author: r.author === 'B' ? 'B' : 'A', text: r.text || '', mood: r.mood || '', sticker: r.sticker || '', image_url: r.image_url || '', ts: new Date(r.created_at).getTime() }; }
+      /* 图片压缩：最大边 1280px、JPEG 0.82 → 100~300KB */
+      function compressImage(file, maxSide = 1280, quality = 0.82) {
+        return new Promise((resolve) => {
+          const img = new Image(); const url = URL.createObjectURL(file);
+          img.onload = () => { let { width, height } = img; if (width > maxSide || height > maxSide) { const ratio = Math.min(maxSide / width, maxSide / height); width = Math.round(width * ratio); height = Math.round(height * ratio); } const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); canvas.toBlob((blob) => { URL.revokeObjectURL(url); resolve(blob || file); }, 'image/jpeg', quality); };
+          img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+          img.src = url;
         });
       }
-      /* ---- 双人空间：图片上传 + 实时同步 ---- */
-      let dualChannel = null;
-      let dualImageFile = null;
-      function dualPostFromRow(r) {
-        return {
-          id: r.id,
-          author: r.author === 'B' ? 'B' : 'A',
-          text: r.text || '',
-          mood: r.mood || '',
-          sticker: r.sticker || '',
-          image_url: r.image_url || '',
-          ts: new Date(r.created_at).getTime()
-        };
-      }
+      /* 上传到 Supabase Storage（公共URL直拼，不依赖 getPublicUrl） */
       async function uploadPostImage(file) {
-        const sb = ensureSupabase();
-        if (!sb || !file) return '';
-        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const sb = ensureSupabase(); if (!sb || !file) return '';
+        const ext = ((file.name || 'photo.jpg').split('.').pop() || 'jpg').toLowerCase();
         const path = `dual/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
         const { error } = await sb.storage.from('dual-images').upload(path, file, { cacheControl: '3600', upsert: false });
-        if (error) { console.warn('[恋学] 图片上传失败', error); return ''; }
-        const { data } = sb.storage.from('dual-images').getPublicUrl(path);
-        return (data && data.publicUrl) || '';
+        if (error) { console.warn('[恋学] 图片上传失败 →', error); return ''; }
+        const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/dual-images/${path}`;
+        console.log('[恋学] 图片已上传 →', publicUrl);
+        return publicUrl;
       }
       async function publishDualPost(post) {
         const sb = ensureSupabase();
-        if (sb) {
-          const { error } = await sb.from('dual_posts').insert({
-            author: post.author,
-            text: post.text,
-            mood: post.mood,
-            sticker: post.sticker,
-            image_url: post.image_url || ''
-          });
-          if (!error) return true;   // 云端发布成功，Realtime 会自动广播给双方
-          console.warn('[恋学] 云端发布失败，改走本地', error);
-        }
-        dual.posts.unshift({ id: post.id || uid(), ...post });
-        persistDual(); renderDual();
-        return false;
+        if (sb) { const { error } = await sb.from('dual_posts').insert({ author: post.author, text: post.text, mood: post.mood, sticker: post.sticker, image_url: post.image_url || '' }); if (!error) return true; console.warn('[恋学] 云端发布失败，改走本地', error); }
+        dual.posts.unshift({ id: post.id, ...post }); persistDual(); renderDual(); return false;
       }
       function initDualRealtime() {
         const sb = ensureSupabase();
         if (!sb) { console.warn('[恋学] 双人空间实时同步不可用（Supabase 未加载），仅本地模式'); return; }
         sb.from('dual_posts').select('id, author, text, mood, sticker, image_url, created_at').order('created_at', { ascending: true }).then(({ data, error }) => {
-          if (!error && Array.isArray(data) && data.length) {
-            const byId = new Map(dual.posts.map((p) => [p.id, p]));
-            data.forEach((r) => { const p = dualPostFromRow(r); if (p.id) byId.set(p.id, p); });
-            dual.posts = [...byId.values()];
-            persistDual(); renderDual();
-          }
+          if (!error && Array.isArray(data) && data.length) { const byId = new Map(dual.posts.map((p) => [p.id, p])); data.forEach((r) => { const p = dualPostFromRow(r); if (p.id) byId.set(p.id, p); }); dual.posts = [...byId.values()]; persistDual(); renderDual(); }
         }).catch(() => {});
         dualChannel = sb.channel('dual-posts-channel')
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'dual_posts' }, (payload) => {
-            const r = payload.new;
-            if (!r || !r.id) return;
+            const r = payload.new; if (!r || !r.id) return;
             if (dual.posts.some((p) => p.id === r.id)) return;
-            dual.posts.unshift(dualPostFromRow(r));
-            persistDual(); renderDual();
-            if ($('dual-new-post') && $('dual-new-post').textContent) { }
+            dual.posts.unshift(dualPostFromRow(r)); persistDual(); renderDual();
           })
-          .subscribe((status, err) => {
-            if (err) console.warn('[恋学] Realtime 订阅失败', err);
-          });
+          .subscribe((status, err) => { if (err) console.warn('[恋学] Realtime 订阅失败', err); });
       }
+
+      /* ===== 业务状态与持久化（与上版一致） ===== */
       let tasks = loadTasks(); let certs; let checkins; let categories; let countdowns; let pomodoro; let pomodoroTimer = null; let pomodoroNotice = ''; let filter = 'all'; let tagFilter = 'all'; let search = ''; let activeView = 'tasks'; let draggedId = null; let calendarCursor = new Date(new Date().getFullYear(),new Date().getMonth(),1); let editingCategoryId = null; let editingCountdownId = null;
       let mindmaps = []; let mmCurrentId = null; let mmSelectedId = null; let mmApiEndpoint = ''; let mmEditing = false;
-      const mmPalette = ['#c9ff00','#7effc6','#ff9ef5','#6ecbff','#ffbb6e','#a89bff','#ff8a8a'];
-      const MM = { W:210, H:40, COL:64, ROW:15, PAD:28 };
+      const mmPalette = ['#c9ff00','#7effc6','#ff9ef5','#6ecbff','#ffbb6e','#a89bff','#ff8a8a']; const MM = { W:210, H:40, COL:64, ROW:15, PAD:28 };
       let dual = loadDual(); let dualAuthor = 'A'; let dualMoodSel = ''; let dualStickerSel = ''; let editingDualId = null; let dualTimer = null;
       const dualStickers = ['🌸','❤️','🌟','💪','☕','🎂','🐱','🐶','✨','🍀','🌈','🦋','🔥','📖'];
       let mistakes = loadMistakes(); let mistakeFilter = 'all'; let mistakeSearch = ''; let editingMistakeId = null;
@@ -939,7 +751,7 @@
       certs = loadCerts();
       const defaultCategories = [{ id:'study', name:'学习打卡', color:'#c9ff00' },{ id:'read', name:'阅读打卡', color:'#7effc6' }];
       const moods = ['😀','🙂','😌','😴','💪','🥳','😕','😤'];
-      const quotes = ['先理解，再记忆；先框架，再细节。','把今天过好，就是对未来最好的回应。','你已经很棒了，剩下的交给时间。','慢慢来，你也在一步一步变好。','先完成，再完美；先开始，再变好。','每天进步 1%，一年后的你会感谢现在的自己。','所有的坚持，都会在未来某天开出花来。','复习，是最被低估的提分方式。','把错题变成你的进步记录。','学过的知识，能讲给别人听，才算真正掌握。','专注 25 分钟，好过刷手机一下午。','不懂就问，问完就记。','你不是在落后，只是在走自己的节奏。','允许自己休息，也是一种前进。','你比你想象的更有力量。','再小的努力 × 365，都会很明显。']; let quoteIndex = 0;
+      const quotes = ['先理解，再记忆；先框架，再细节。','把今天过好，就是对未来最好的回应。','你已经很棒了，剩下的交给时间。','慢慢来，你也在一步一步变好。','先完成，再完美；先开始，再变好。','每天进步 1%，一年后的你会感谢现在的自己。','所有的坚持，都会在未来某天开出花来。','复习，是最被低估的提分方式。','把错题变成你的进步记录。','学过的知识，能讲给别人听，才算真正掌握。','专注 25 分钟，好过刷手机一下午。','不懂就问，问完就记。','你不是在落后，只是在走自己的节奏。','允许自己休息，也是一种前进。','你比你想象的更有力量。','再小的努力 × 365，都会很明显。'];
       checkins = loadCheckins(); categories = loadCategories(); countdowns = loadCountdowns(); pomodoro = loadPomodoro(); loadMindMaps();
       function loadTasks() { try { const raw = JSON.parse(localStorage.getItem(TASK_KEY)); return Array.isArray(raw) ? raw.map(normalizeTask) : []; } catch { return []; } }
       function normalizeTask(task) { return { id:task.id || uid(), text:String(task.text || task.title || '').trim(), completed:!!task.completed, priority:['high','medium','low'].includes(task.priority) ? task.priority : 'medium', notes:String(task.notes || ''), dueDate:task.dueDate || '', tags:Array.isArray(task.tags) ? task.tags.map(String).filter(Boolean) : String(task.tags || '').split(',').map((x) => x.trim()).filter(Boolean) }; }
@@ -954,137 +766,31 @@
       function loadVocab() { try { const raw = JSON.parse(localStorage.getItem(VOCAB_KEY)); return Array.isArray(raw) ? raw : []; } catch { return []; } }
       function loadQuoteUsed() { try { const raw = JSON.parse(localStorage.getItem(QUOTE_KEY)); return Array.isArray(raw) ? raw.slice(-200) : []; } catch { return []; } }
       function persistQuoteUsed() { safeSet(QUOTE_KEY, JSON.stringify(quoteUsed.slice(-200))); }
-      function persist() {
-        try {
-          safeSet(TASK_KEY, JSON.stringify(tasks));
-          safeSet(CERT_KEY, JSON.stringify(certs));
-          safeSet(CHECKIN_KEY, JSON.stringify(checkins));
-          safeSet(CATEGORY_KEY, JSON.stringify(categories));
-          safeSet(COUNTDOWN_KEY, JSON.stringify(countdowns));
-          safeSet(POMO_KEY, JSON.stringify({...pomodoro,running:undefined}));
-          safeSet(MISTAKE_KEY, JSON.stringify(mistakes));
-          safeSet(VOCAB_KEY, JSON.stringify(vocab));
-        } catch (e) { console.warn('[恋学] persist 异常', e); }
-      }
+      function persist() { try { safeSet(TASK_KEY, JSON.stringify(tasks)); safeSet(CERT_KEY, JSON.stringify(certs)); safeSet(CHECKIN_KEY, JSON.stringify(checkins)); safeSet(CATEGORY_KEY, JSON.stringify(categories)); safeSet(COUNTDOWN_KEY, JSON.stringify(countdowns)); safeSet(POMO_KEY, JSON.stringify({...pomodoro,running:undefined})); safeSet(MISTAKE_KEY, JSON.stringify(mistakes)); safeSet(VOCAB_KEY, JSON.stringify(vocab)); } catch (e) { console.warn('[恋学] persist 异常', e); } }
       function persistDual() { safeSet(DUAL_KEY, JSON.stringify({ identity: dual.identity, syncUrl: dual.syncUrl, posts: dual.posts })); }
       function persistMindMaps() { safeSet(MINDMAP_KEY, JSON.stringify({ maps: mindmaps, currentMapId: mmCurrentId, endpoint: mmApiEndpoint })); }
       function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2,9)}`; }
       function escapeHtml(text) { return String(text).replace(/[&<>'"]/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[c])); }
       function dateLabel() { const el = $('date-label'); if (el) el.textContent = new Intl.DateTimeFormat('zh-CN', { weekday:'long', month:'long', day:'numeric' }).format(new Date()); }
       function fetchWithTimeout(url, ms) { return Promise.race([ fetch(url, { cache:'no-store' }), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms)) ]); }
-      async function fetchOnlineQuote() {
-        const cats = ['a','b','c','d','e','f','g','h','i','j','k','l'];
-        for (let i=0;i<3;i++) {
-          const cat = cats[Math.floor(Math.random()*cats.length)];
-          try {
-            const res = await fetchWithTimeout(`https://v1.hitokoto.cn/?c=${cat}&encode=json`, 4000);
-            if (!res.ok) continue;
-            const data = await res.json();
-            const text = String(data.hitokoto || '').trim();
-            if (!text || quoteUsed.includes(text)) continue;
-            return text;
-          } catch { continue; }
-        }
-        return null;
-      }
-      /* ===== 大标题：励志/治愈/学习/热血 四字成语（内置库，每次登录自动刷新） ===== */
+      async function fetchOnlineQuote() { const cats = ['a','b','c','d','e','f','g','h','i','j','k','l']; for (let i=0;i<3;i++) { const cat = cats[Math.floor(Math.random()*cats.length)]; try { const res = await fetchWithTimeout(`https://v1.hitokoto.cn/?c=${cat}&encode=json`, 4000); if (!res.ok) continue; const data = await res.json(); const text = String(data.hitokoto || '').trim(); if (!text || quoteUsed.includes(text)) continue; return text; } catch { continue; } } return null; }
       const HERO_IDIOMS = [
-        /* 励志热血 */ '天道酬勤','勤能补拙','锲而不舍','持之以恒','百折不挠','破釜沉舟','卧薪尝胆','闻鸡起舞','悬梁刺股','囊萤映雪','废寝忘食','勇往直前','坚韧不拔','自强不息','厚积薄发','水滴石穿','铁杵成针','愚公移山','乘风破浪','披荆斩棘','扬帆起航','逐梦前行','全力以赴','精益求精','力争上游','奋发图强','发愤图强','励精图治','迎难而上','知难而进','攻坚克难','马到成功','旗开得胜','鹏程万里','一往无前','势如破竹','后来居上',
-        /* 学习进取 */ '学海无涯','学无止境','勤学好问','不耻下问','温故知新','专心致志','一丝不苟','循序渐进','融会贯通','举一反三','触类旁通','熟能生巧','业精于勤','孜孜不倦','手不释卷','博学多才','满腹经纶','学富五车','博古通今','见多识广','敏而好学','韦编三绝','凿壁偷光','功不唐捐','日积月累','聚沙成塔','集腋成裘','积水成渊','磨杵成针',
-        /* 治愈温柔 */ '云淡风轻','心平气和','泰然自若','怡然自得','岁月静好','风和日丽','春暖花开','柳暗花明','拨云见日','苦尽甘来','否极泰来','豁然开朗','如释重负','悠然自得','从容不迫','宠辱不惊','随遇而安','安之若素','心如止水','静水流深','向光而行','来日方长','未来可期','万事胜意','人间值得'
+        '天道酬勤','勤能补拙','锲而不舍','持之以恒','百折不挠','破釜沉舟','卧薪尝胆','闻鸡起舞','悬梁刺股','囊萤映雪','废寝忘食','勇往直前','坚韧不拔','自强不息','厚积薄发','水滴石穿','铁杵成针','愚公移山','乘风破浪','披荆斩棘','扬帆起航','逐梦前行','全力以赴','精益求精','力争上游','奋发图强','发愤图强','励精图治','迎难而上','知难而进','攻坚克难','马到成功','旗开得胜','鹏程万里','一往无前','势如破竹','后来居上','学海无涯','学无止境','勤学好问','不耻下问','温故知新','专心致志','一丝不苟','循序渐进','融会贯通','举一反三','触类旁通','熟能生巧','业精于勤','孜孜不倦','手不释卷','博学多才','满腹经纶','学富五车','博古通今','见多识广','敏而好学','韦编三绝','凿壁偷光','功不唐捐','日积月累','聚沙成塔','集腋成裘','积水成渊','磨杵成针','云淡风轻','心平气和','泰然自若','怡然自得','岁月静好','风和日丽','春暖花开','柳暗花明','拨云见日','苦尽甘来','否极泰来','豁然开朗','如释重负','悠然自得','从容不迫','宠辱不惊','随遇而安','安之若素','心如止水','静水流深','向光而行','来日方长','未来可期','万事胜意','人间值得'
       ];
       let heroLastIdiom = '';
-      function nextHeroIdiom() {
-        const el = $('hero-title');
-        if (!el) return;
-        const pool = HERO_IDIOMS.filter((x) => x !== heroLastIdiom);
-        const word = pool[Math.floor(Math.random() * pool.length)];
-        heroLastIdiom = word;
-        el.textContent = word;
-      }
-      function fitQuoteText() {
-        const el = $('quote-text');
-        if (!el) return;
-        const box = el.parentElement;
-        if (!box) return;
-        const maxW = box.clientWidth;
-        el.style.fontSize = '44px';
-        let size = 44;
-        while (size > 12 && el.scrollWidth > maxW) {
-          size -= 1;
-          el.style.fontSize = size + 'px';
-        }
-      }
-      async function nextQuote() {
-        const target = $('quote-text');
-        if (!target) return;
-        const apply = (text) => { if (!text) return; lastQuoteText = text; quoteUsed.push(text); persistQuoteUsed(); target.classList.remove('quote-changing'); requestAnimationFrame(() => { target.textContent = text; target.classList.add('quote-changing'); fitQuoteText(); }); };
-        const online = await fetchOnlineQuote();
-        if (online) { apply(online); return; }
-        const pool = quotes.filter((q) => !quoteUsed.includes(q));
-        const candidates = (pool.length ? pool : quotes).filter((q) => q !== lastQuoteText);
-        const chosen = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : quotes[0];
-        apply(chosen);
-      }
+      function nextHeroIdiom() { const el = $('hero-title'); if (!el) return; const pool = HERO_IDIOMS.filter((x) => x !== heroLastIdiom); const word = pool[Math.floor(Math.random() * pool.length)]; heroLastIdiom = word; el.textContent = word; }
+      function fitQuoteText() { const el = $('quote-text'); if (!el) return; const box = el.parentElement; if (!box) return; const maxW = box.clientWidth; el.style.fontSize = '44px'; let size = 44; while (size > 12 && el.scrollWidth > maxW) { size -= 1; el.style.fontSize = size + 'px'; } }
+      async function nextQuote() { const target = $('quote-text'); if (!target) return; const apply = (text) => { if (!text) return; lastQuoteText = text; quoteUsed.push(text); persistQuoteUsed(); target.classList.remove('quote-changing'); requestAnimationFrame(() => { target.textContent = text; target.classList.add('quote-changing'); fitQuoteText(); }); }; const online = await fetchOnlineQuote(); if (online) { apply(online); return; } const pool = quotes.filter((q) => !quoteUsed.includes(q)); const candidates = (pool.length ? pool : quotes).filter((q) => q !== lastQuoteText); const chosen = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : quotes[0]; apply(chosen); }
       function isOverdue(task) { if (!task.dueDate || task.completed) return false; const end = new Date(`${task.dueDate}T23:59:59`); return end.getTime() < Date.now(); }
       function taskMatches(task) { const needle = search.trim().toLowerCase(); return (!needle || `${task.text} ${task.notes}`.toLowerCase().includes(needle)) && (tagFilter === 'all' || task.tags.includes(tagFilter)) && (filter === 'all' || (filter === 'active' ? !task.completed : task.completed)); }
       function renderTags() { const el = $('tag-filter'); if (!el) return; const tags = [...new Set(tasks.flatMap((task) => task.tags))].sort((a,b) => a.localeCompare(b,'zh-CN')); const current = tagFilter; el.innerHTML = '<option value="all">所有标签</option>' + tags.map((tag) => `<option value="${escapeHtml(tag)}"># ${escapeHtml(tag)}</option>`).join(''); el.value = tags.includes(current) ? current : 'all'; if (!tags.includes(current)) tagFilter = 'all'; }
-      function renderTasks() {
-        try {
-          renderTags();
-          const visible = tasks.filter(taskMatches); const priorityText = { high:'高优先级', medium:'中优先级', low:'低优先级' }; const priorityClass = { high:'high', medium:'medium', low:'low' };
-          const list = $('task-list'); if (!list) return;
-          list.innerHTML = visible.map((task) => `<li class="task-card task-enter priority-${priorityClass[task.priority]} ${isOverdue(task) ? 'overdue' : ''}" draggable="true" data-id="${task.id}"><label class="check-label"><input type="checkbox" ${task.completed ? 'checked' : ''} aria-label="标记完成：${escapeHtml(task.text)}"><span class="check-box"><span class="checkmark">✓</span></span></label><div class="task-main"><p class="task-title ${task.completed ? 'done' : ''}">${escapeHtml(task.text)}</p>${task.notes ? `<p class="task-notes">${escapeHtml(task.notes)}</p>` : ''}<div class="task-meta"><span class="pill priority-pill ${priorityClass[task.priority]}">${priorityText[task.priority]}</span>${task.dueDate ? `<span class="due">${isOverdue(task) ? '⚠ 已过期 · ' : '截止 · '}${escapeHtml(task.dueDate)}</span>` : ''}${task.tags.map((tag) => `<span class="pill"># ${escapeHtml(tag)}</span>`).join('')}</div></div><div class="task-actions"><button class="mini-btn move-btn" data-direction="up" type="button" aria-label="上移任务" title="上移">↑</button><button class="mini-btn move-btn" data-direction="down" type="button" aria-label="下移任务" title="下移">↓</button><button class="mini-btn delete-btn" type="button" aria-label="删除：${escapeHtml(task.text)}" title="删除">×</button></div></li>`).join('');
-          const active = tasks.filter((t) => !t.completed).length; const completed = tasks.length - active; const percent = tasks.length ? Math.round(completed / tasks.length * 100) : 0;
-          if ($('total-stat')) $('total-stat').textContent = tasks.length;
-          if ($('active-stat')) $('active-stat').textContent = active;
-          if ($('completed-stat')) $('completed-stat').textContent = completed;
-          if ($('progress-stat')) $('progress-stat').textContent = `${percent}%`;
-          if ($('progress-label')) $('progress-label').textContent = tasks.length ? `${completed} 项已完成` : '准备开始';
-          if ($('task-count')) $('task-count').textContent = `${active} 项未完成${tasks.length ? ` · 共 ${tasks.length} 项` : ''}`;
-          if ($('clear-completed')) $('clear-completed').classList.toggle('hidden', completed === 0);
-          if ($('empty-state')) $('empty-state').classList.toggle('hidden', visible.length > 0);
-          if ($('empty-title')) $('empty-title').textContent = filter === 'completed' && completed === 0 ? '还没有已完成事项' : filter === 'active' && active === 0 ? '全部完成了' : '没有匹配的任务';
-          if ($('empty-copy')) $('empty-copy').textContent = search || tagFilter !== 'all' ? '试试清除搜索或标签筛选。' : '把想学的知识点记下来，轻松开始。';
-          document.querySelectorAll('.filter-btn[data-filter]').forEach((button) => { button.classList.toggle('active', button.dataset.filter === filter); button.setAttribute('aria-selected', button.dataset.filter === filter); });
-        } catch (e) { console.warn('[恋学] renderTasks 异常', e); }
-      }
+      function renderTasks() { try { renderTags(); const visible = tasks.filter(taskMatches); const priorityText = { high:'高优先级', medium:'中优先级', low:'低优先级' }; const priorityClass = { high:'high', medium:'medium', low:'low' }; const list = $('task-list'); if (!list) return; list.innerHTML = visible.map((task) => `<li class="task-card task-enter priority-${priorityClass[task.priority]} ${isOverdue(task) ? 'overdue' : ''}" draggable="true" data-id="${task.id}"><label class="check-label"><input type="checkbox" ${task.completed ? 'checked' : ''} aria-label="标记完成：${escapeHtml(task.text)}"><span class="check-box"><span class="checkmark">✓</span></span></label><div class="task-main"><p class="task-title ${task.completed ? 'done' : ''}">${escapeHtml(task.text)}</p>${task.notes ? `<p class="task-notes">${escapeHtml(task.notes)}</p>` : ''}<div class="task-meta"><span class="pill priority-pill ${priorityClass[task.priority]}">${priorityText[task.priority]}</span>${task.dueDate ? `<span class="due">${isOverdue(task) ? '⚠ 已过期 · ' : '截止 · '}${escapeHtml(task.dueDate)}</span>` : ''}${task.tags.map((tag) => `<span class="pill"># ${escapeHtml(tag)}</span>`).join('')}</div></div><div class="task-actions"><button class="mini-btn move-btn" data-direction="up" type="button" aria-label="上移任务" title="上移">↑</button><button class="mini-btn move-btn" data-direction="down" type="button" aria-label="下移任务" title="下移">↓</button><button class="mini-btn delete-btn" type="button" aria-label="删除：${escapeHtml(task.text)}" title="删除">×</button></div></li>`).join(''); const active = tasks.filter((t) => !t.completed).length; const completed = tasks.length - active; const percent = tasks.length ? Math.round(completed / tasks.length * 100) : 0; if ($('total-stat')) $('total-stat').textContent = tasks.length; if ($('active-stat')) $('active-stat').textContent = active; if ($('completed-stat')) $('completed-stat').textContent = completed; if ($('progress-stat')) $('progress-stat').textContent = `${percent}%`; if ($('progress-label')) $('progress-label').textContent = tasks.length ? `${completed} 项已完成` : '准备开始'; if ($('task-count')) $('task-count').textContent = `${active} 项未完成${tasks.length ? ` · 共 ${tasks.length} 项` : ''}`; if ($('clear-completed')) $('clear-completed').classList.toggle('hidden', completed === 0); if ($('empty-state')) $('empty-state').classList.toggle('hidden', visible.length > 0); if ($('empty-title')) $('empty-title').textContent = filter === 'completed' && completed === 0 ? '还没有已完成事项' : filter === 'active' && active === 0 ? '全部完成了' : '没有匹配的任务'; if ($('empty-copy')) $('empty-copy').textContent = search || tagFilter !== 'all' ? '试试清除搜索或标签筛选。' : '把想学的知识点记下来，轻松开始。'; document.querySelectorAll('.filter-btn[data-filter]').forEach((button) => { button.classList.toggle('active', button.dataset.filter === filter); button.setAttribute('aria-selected', button.dataset.filter === filter); }); } catch (e) { console.warn('[恋学] renderTasks 异常', e); } }
       function renderCerts() { try { const el = $('cert-list'); if (!el) return; el.innerHTML = certs.map((cert) => `<article class="glass lift cert-card ${cert.status === 'done' ? 'done' : ''}" data-cert-id="${cert.id}"><div class="cert-top"><h3 class="cert-name">${escapeHtml(cert.name)}</h3><span class="stars" aria-label="难度 ${cert.difficulty} 星">${'★'.repeat(Math.max(1,Math.min(5,Number(cert.difficulty)||1)))}${'☆'.repeat(5 - Math.max(1,Math.min(5,Number(cert.difficulty)||1)))}</span></div><p class="cert-desc">${escapeHtml(cert.desc || '自定义证书备考目标。')}</p><p class="cert-time">⌁ ${escapeHtml(cert.time || '时间待确认')}</p>${CERT_URLS[cert.id] ? `<p class="cert-link"><a href="${escapeHtml(CERT_URLS[cert.id])}" target="_blank" rel="noopener noreferrer">↗ 学习网站</a></p>` : ''}<div class="cert-footer"><button type="button" class="status-toggle ${cert.status === 'done' ? 'done' : ''}" data-cert-action="toggle">${cert.status === 'done' ? '✓ 已完成' : '待备考'}</button><button type="button" class="btn glass-soft" style="min-height:34px;padding:0 10px;font-size:11px" data-cert-action="task">生成待办</button></div></article>`).join(''); } catch (e) { console.warn('[恋学] renderCerts 异常', e); } }
       function dateKey(date) { const y = date.getFullYear(); const m = String(date.getMonth()+1).padStart(2,'0'); const d = String(date.getDate()).padStart(2,'0'); return `${y}-${m}-${d}`; }
       function renderCategories() { try { const el = $('category-list'); if (!el) return; el.innerHTML = categories.map((category) => `<div class="category-row" data-category-id="${category.id}"><span class="category-name"><i class="category-swatch" style="background:${escapeHtml(category.color || 'var(--accent)')}"></i>${escapeHtml(category.name)}</span><span class="category-actions"><button class="mini-btn category-edit" type="button" title="编辑分类" aria-label="编辑分类">✎</button><button class="mini-btn category-delete" type="button" title="删除分类" aria-label="删除分类">×</button></span></div>`).join(''); } catch (e) { console.warn('[恋学] renderCategories 异常', e); } }
-      function renderCalendar() {
-        try {
-          const year = calendarCursor.getFullYear(); const month = calendarCursor.getMonth();
-          if ($('calendar-month')) $('calendar-month').textContent = `${year} 年 ${month+1} 月`;
-          const first = new Date(year,month,1).getDay(); const days = new Date(year,month+1,0).getDate(); const prevDays = new Date(year,month,0).getDate();
-          const cells = []; const selectedKey = $('checkin-date') ? $('checkin-date').value : dateKey(new Date());
-          for (let i=0;i<42;i++) {
-            const day = i-first+1; let date; let muted = false;
-            if (day < 1) { date = new Date(year,month-1,prevDays+day); muted = true; } else if (day > days) { date = new Date(year,month+1,day-days); muted = true; } else date = new Date(year,month,day);
-            const key = dateKey(date); const record = checkins[key]; const checked = record && ((record.types || []).length || record.note || record.mood);
-            const today = key === dateKey(new Date()); const sel = key === selectedKey;
-            cells.push(`<button type="button" class="day-cell ${muted ? 'muted' : ''} ${today ? 'today' : ''} ${checked ? 'checked' : ''} ${sel ? 'selected' : ''}" data-date="${key}"><span class="day-number">${date.getDate()}</span>${record?.mood ? `<span class="day-mood">${escapeHtml(record.mood)}</span>` : ''}${checked ? `<span class="day-markers">${(record.types || []).slice(0,3).map((id) => `<i class="day-dot" style="background:${escapeHtml(categories.find((c) => c.id === id)?.color || 'var(--accent)')}"></i>`).join('')}</span>` : ''}</button>`);
-          }
-          if ($('calendar-grid')) $('calendar-grid').innerHTML = cells.join('');
-          renderCategories();
-        } catch (e) { console.warn('[恋学] renderCalendar 异常', e); }
-      }
+      function renderCalendar() { try { const year = calendarCursor.getFullYear(); const month = calendarCursor.getMonth(); if ($('calendar-month')) $('calendar-month').textContent = `${year} 年 ${month+1} 月`; const first = new Date(year,month,1).getDay(); const days = new Date(year,month+1,0).getDate(); const prevDays = new Date(year,month,0).getDate(); const cells = []; const selectedKey = $('checkin-date') ? $('checkin-date').value : dateKey(new Date()); for (let i=0;i<42;i++) { const day = i-first+1; let date; let muted = false; if (day < 1) { date = new Date(year,month-1,prevDays+day); muted = true; } else if (day > days) { date = new Date(year,month+1,day-days); muted = true; } else date = new Date(year,month,day); const key = dateKey(date); const record = checkins[key]; const checked = record && ((record.types || []).length || record.note || record.mood); const today = key === dateKey(new Date()); const sel = key === selectedKey; cells.push(`<button type="button" class="day-cell ${muted ? 'muted' : ''} ${today ? 'today' : ''} ${checked ? 'checked' : ''} ${sel ? 'selected' : ''}" data-date="${key}"><span class="day-number">${date.getDate()}</span>${record?.mood ? `<span class="day-mood">${escapeHtml(record.mood)}</span>` : ''}${checked ? `<span class="day-markers">${(record.types || []).slice(0,3).map((id) => `<i class="day-dot" style="background:${escapeHtml(categories.find((c) => c.id === id)?.color || 'var(--accent)')}"></i>`).join('')}</span>` : ''}</button>`); } if ($('calendar-grid')) $('calendar-grid').innerHTML = cells.join(''); renderCategories(); } catch (e) { console.warn('[恋学] renderCalendar 异常', e); } }
       function calcStreak() { const d = new Date(); if (!checkins[dateKey(d)]) d.setDate(d.getDate()-1); let streak = 0; while (checkins[dateKey(d)]) { streak += 1; d.setDate(d.getDate()-1); } return streak; }
-      function openCheckin(date) {
-        const record = checkins[date] || { note:'', types:[], mood:'' };
-        const today = dateKey(new Date()); const isToday = date === today;
-        if ($('checkin-date')) $('checkin-date').value = date;
-        if ($('checkin-modal-title')) $('checkin-modal-title').textContent = isToday ? '今日签到' : `${date} 签到`;
-        if ($('checkin-date-label')) $('checkin-date-label').textContent = `日期 · ${date}${record.types.length || record.note || record.mood ? '（已有记录，可修改）' : '（还没有记录）'}`;
-        if ($('checkin-streak')) $('checkin-streak').textContent = isToday ? `连续签到 ${calcStreak()} 天` : '打卡记录';
-        if ($('checkin-today-tag')) $('checkin-today-tag').classList.toggle('hidden', !isToday);
-        if ($('checkin-note')) $('checkin-note').value = record.note || '';
-        if ($('checkin-types')) $('checkin-types').innerHTML = categories.map((category) => `<label class="type-option"><input type="checkbox" value="${category.id}" ${record.types?.includes(category.id) ? 'checked' : ''}>${escapeHtml(category.name)}</label>`).join('');
-        if ($('mood-options')) $('mood-options').innerHTML = moods.map((mood) => `<button type="button" class="mood-btn ${record.mood === mood ? 'selected' : ''}" data-mood="${mood}" aria-label="${mood}">${mood}</button>`).join('');
-        renderCalendar();
-        const modal = $('checkin-modal'); if (!modal) return;
-        modal.classList.remove('hidden'); modal.classList.remove('closing');
-      }
+      function openCheckin(date) { const record = checkins[date] || { note:'', types:[], mood:'' }; const today = dateKey(new Date()); const isToday = date === today; if ($('checkin-date')) $('checkin-date').value = date; if ($('checkin-modal-title')) $('checkin-modal-title').textContent = isToday ? '今日签到' : `${date} 签到`; if ($('checkin-date-label')) $('checkin-date-label').textContent = `日期 · ${date}${record.types.length || record.note || record.mood ? '（已有记录，可修改）' : '（还没有记录）'}`; if ($('checkin-streak')) $('checkin-streak').textContent = isToday ? `连续签到 ${calcStreak()} 天` : '打卡记录'; if ($('checkin-today-tag')) $('checkin-today-tag').classList.toggle('hidden', !isToday); if ($('checkin-note')) $('checkin-note').value = record.note || ''; if ($('checkin-types')) $('checkin-types').innerHTML = categories.map((category) => `<label class="type-option"><input type="checkbox" value="${category.id}" ${record.types?.includes(category.id) ? 'checked' : ''}>${escapeHtml(category.name)}</label>`).join(''); if ($('mood-options')) $('mood-options').innerHTML = moods.map((mood) => `<button type="button" class="mood-btn ${record.mood === mood ? 'selected' : ''}" data-mood="${mood}" aria-label="${mood}">${mood}</button>`).join(''); renderCalendar(); const modal = $('checkin-modal'); if (!modal) return; modal.classList.remove('hidden'); modal.classList.remove('closing'); }
       function openSignin() { openCheckin(dateKey(new Date())); }
       function closeCheckin() { const modal = $('checkin-modal'); if (!modal || modal.classList.contains('hidden')) return; modal.classList.add('closing'); setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('closing'); }, 200); }
       function formatCountdown(ms) { const total = Math.max(0,Math.floor(ms/1000)); return { days:Math.floor(total/86400), hours:Math.floor(total%86400/3600), minutes:Math.floor(total%3600/60), seconds:total%60 }; }
@@ -1098,186 +804,26 @@
       function assignMapColors(node, color) { node._color = color || null; node.children.forEach((c, i) => assignMapColors(c, color || mmPalette[i % mmPalette.length])); }
       function mmMeasureWidth(text) { const s = String(text || ''); const cjk = (s.match(/[\u4e00-\u9fff]/g) || []).length; const w = cjk * 13 + (s.length - cjk) * 7.5; return Math.min(MM.W, Math.max(50, w + 26)); }
       function layoutMap(root) { let leaf = 0; let depthMax = 0; (function assign(node, depth) { if (depth > depthMax) depthMax = depth; if (node.collapsed || !node.children.length) { node._leaf = leaf++; node._y = node._leaf * (MM.H + MM.ROW); } else { node.children.forEach((c) => assign(c, depth + 1)); node._y = (node.children[0]._y + node.children[node.children.length - 1]._y) / 2; } })(root, 0); (function place(node, depth) { node._x = MM.PAD + depth * (MM.W + MM.COL); node.children.forEach((c) => place(c, depth + 1)); })(root, 0); const height = Math.max(1, leaf) * (MM.H + MM.ROW) - MM.ROW + MM.PAD * 2; const width = MM.PAD * 2 + depthMax * (MM.W + MM.COL) + MM.W; return { width, height }; }
-      function renderMindMap() {
-        try {
-          const map = currentMap(); const canvas = $('mindmap-canvas'); const select = $('mm-map-select');
-          if (!canvas || !select) return;
-          select.innerHTML = mindmaps.length ? mindmaps.map((m) => `<option value="${m.id}" ${m.id === mmCurrentId ? 'selected' : ''}>${escapeHtml(m.title || '未命名')}</option>`).join('') : '<option value="">暂无脑图</option>';
-          if ($('mm-delete-map')) $('mm-delete-map').disabled = !mindmaps.length;
-          if ($('mm-api-endpoint')) $('mm-api-endpoint').value = mmApiEndpoint;
-          if (!map || !map.root) { canvas.innerHTML = ''; if ($('mm-empty')) $('mm-empty').classList.remove('hidden'); updateMmToolbar(); return; }
-          if ($('mm-empty')) $('mm-empty').classList.add('hidden');
-          assignMapColors(map.root); const lo = layoutMap(map.root);
-          const svgNS = 'http://www.w3.org/2000/svg'; const svg = document.createElementNS(svgNS,'svg');
-          svg.setAttribute('class','mm-lines'); svg.setAttribute('width', lo.width); svg.setAttribute('height', lo.height); svg.setAttribute('viewBox', `0 0 ${lo.width} ${lo.height}`);
-          const nodesWrap = document.createElement('div'); nodesWrap.className = 'mm-nodes';
-          (function render(node, parent) {
-            if (parent && parent.collapsed) return;
-            if (parent) { const x1 = parent._x + parent._w, y1 = parent._y + MM.H/2; const x2 = node._x, y2 = node._y + MM.H/2; const dx = Math.max(20,(x2-x1)*0.5); const path = document.createElementNS(svgNS,'path'); path.setAttribute('d', `M${x1} ${y1} C${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}`); path.setAttribute('fill','none'); path.style.stroke = node._color; path.style.opacity = .6; path.style.strokeWidth = 2; svg.appendChild(path); }
-            node._w = mmMeasureWidth(node.text);
-            const btn = document.createElement('button'); btn.type = 'button';
-            btn.className = 'mm-node' + (node.id === mmSelectedId ? ' selected' : '') + (node.children.length && node.collapsed ? ' collapsed' : '');
-            btn.dataset.mmId = node.id; btn.style.left = node._x + 'px'; btn.style.top = node._y + 'px'; btn.style.width = node._w + 'px'; btn.style.setProperty('--ncolor', node._color);
-            btn.innerHTML = `<span class="mm-node-text">${escapeHtml(node.text || '未命名')}</span>` + (node.children.length && node.collapsed ? `<span class="mm-node-count">${node.children.length}</span>` : '');
-            nodesWrap.appendChild(btn); node.children.forEach((c) => render(c, node));
-          })(map.root, null);
-          canvas.innerHTML = ''; canvas.appendChild(svg); canvas.appendChild(nodesWrap);
-          canvas.style.width = lo.width + 'px'; canvas.style.height = lo.height + 'px';
-          updateMmToolbar();
-        } catch (e) { console.warn('[恋学] renderMindMap 异常', e); }
-      }
-      function updateMmToolbar() {
-        const map = currentMap(); const toolbar = $('mm-toolbar');
-        if (!toolbar) return;
-        if (!map || !map.root || !mmSelectedId) { toolbar.classList.add('hidden'); return; }
-        const found = findNode(map, mmSelectedId);
-        if (!found) { toolbar.classList.add('hidden'); return; }
-        toolbar.classList.remove('hidden');
-        if ($('mm-selected-label')) $('mm-selected-label').textContent = found.node.text || '未命名';
-        const toggleBtn = $('mm-toggle-btn'); const deleteBtn = $('mm-delete-btn');
-        if (toggleBtn) { toggleBtn.classList.toggle('hidden', found.node.children.length === 0); toggleBtn.textContent = found.node.collapsed ? '展开' : '折叠'; }
-        if (deleteBtn) deleteBtn.disabled = !found.parent;
-      }
-      function startInlineEdit(id) {
-        if (mmEditing) return;
-        const btn = document.querySelector(`.mm-node[data-mm-id="${id}"]`);
-        const map = currentMap(); const found = findNode(map, id);
-        if (!btn || !found) return;
-        const span = btn.querySelector('.mm-node-text');
-        const input = document.createElement('input');
-        input.className = 'mm-inline-input'; input.value = found.node.text;
-        span.replaceWith(input); input.focus(); input.select(); mmEditing = true;
-        let done = false;
-        const finish = () => { if (done) return; done = true; mmEditing = false; const v = input.value.trim(); if (v) found.node.text = v; renderMindMap(); };
-        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') finish(); if (e.key === 'Escape') { input.value = found.node.text; finish(); } });
-        input.addEventListener('blur', finish);
-      }
+      function renderMindMap() { try { const map = currentMap(); const canvas = $('mindmap-canvas'); const select = $('mm-map-select'); if (!canvas || !select) return; select.innerHTML = mindmaps.length ? mindmaps.map((m) => `<option value="${m.id}" ${m.id === mmCurrentId ? 'selected' : ''}>${escapeHtml(m.title || '未命名')}</option>`).join('') : '<option value="">暂无脑图</option>'; if ($('mm-delete-map')) $('mm-delete-map').disabled = !mindmaps.length; if ($('mm-api-endpoint')) $('mm-api-endpoint').value = mmApiEndpoint; if (!map || !map.root) { canvas.innerHTML = ''; if ($('mm-empty')) $('mm-empty').classList.remove('hidden'); updateMmToolbar(); return; } if ($('mm-empty')) $('mm-empty').classList.add('hidden'); assignMapColors(map.root); const lo = layoutMap(map.root); const svgNS = 'http://www.w3.org/2000/svg'; const svg = document.createElementNS(svgNS,'svg'); svg.setAttribute('class','mm-lines'); svg.setAttribute('width', lo.width); svg.setAttribute('height', lo.height); svg.setAttribute('viewBox', `0 0 ${lo.width} ${lo.height}`); const nodesWrap = document.createElement('div'); nodesWrap.className = 'mm-nodes'; (function render(node, parent) { if (parent && parent.collapsed) return; if (parent) { const x1 = parent._x + parent._w, y1 = parent._y + MM.H/2; const x2 = node._x, y2 = node._y + MM.H/2; const dx = Math.max(20,(x2-x1)*0.5); const path = document.createElementNS(svgNS,'path'); path.setAttribute('d', `M${x1} ${y1} C${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}`); path.setAttribute('fill','none'); path.style.stroke = node._color; path.style.opacity = .6; path.style.strokeWidth = 2; svg.appendChild(path); } node._w = mmMeasureWidth(node.text); const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'mm-node' + (node.id === mmSelectedId ? ' selected' : '') + (node.children.length && node.collapsed ? ' collapsed' : ''); btn.dataset.mmId = node.id; btn.style.left = node._x + 'px'; btn.style.top = node._y + 'px'; btn.style.width = node._w + 'px'; btn.style.setProperty('--ncolor', node._color); btn.innerHTML = `<span class="mm-node-text">${escapeHtml(node.text || '未命名')}</span>` + (node.children.length && node.collapsed ? `<span class="mm-node-count">${node.children.length}</span>` : ''); nodesWrap.appendChild(btn); node.children.forEach((c) => render(c, node)); })(map.root, null); canvas.innerHTML = ''; canvas.appendChild(svg); canvas.appendChild(nodesWrap); canvas.style.width = lo.width + 'px'; canvas.style.height = lo.height + 'px'; updateMmToolbar(); } catch (e) { console.warn('[恋学] renderMindMap 异常', e); } }
+      function updateMmToolbar() { const map = currentMap(); const toolbar = $('mm-toolbar'); if (!toolbar) return; if (!map || !map.root || !mmSelectedId) { toolbar.classList.add('hidden'); return; } const found = findNode(map, mmSelectedId); if (!found) { toolbar.classList.add('hidden'); return; } toolbar.classList.remove('hidden'); if ($('mm-selected-label')) $('mm-selected-label').textContent = found.node.text || '未命名'; const toggleBtn = $('mm-toggle-btn'); const deleteBtn = $('mm-delete-btn'); if (toggleBtn) { toggleBtn.classList.toggle('hidden', found.node.children.length === 0); toggleBtn.textContent = found.node.collapsed ? '展开' : '折叠'; } if (deleteBtn) deleteBtn.disabled = !found.parent; }
+      function startInlineEdit(id) { if (mmEditing) return; const btn = document.querySelector(`.mm-node[data-mm-id="${id}"]`); const map = currentMap(); const found = findNode(map, id); if (!btn || !found) return; const span = btn.querySelector('.mm-node-text'); const input = document.createElement('input'); input.className = 'mm-inline-input'; input.value = found.node.text; span.replaceWith(input); input.focus(); input.select(); mmEditing = true; let done = false; const finish = () => { if (done) return; done = true; mmEditing = false; const v = input.value.trim(); if (v) found.node.text = v; renderMindMap(); }; input.addEventListener('keydown', (e) => { if (e.key === 'Enter') finish(); if (e.key === 'Escape') { input.value = found.node.text; finish(); } }); input.addEventListener('blur', finish); }
       const L1_RE = /^\s*(?:第[一二三四五六七八九十百\d]+[章节部分]|[一二三四五六七八九十]+[、.．)）:]|\d+[、.．)）:]|（[一二三四五六七八九十\d]+）|\([一二三四五六七八九十\d]+\)|.*[：:]\s*$)/;
       const L2_RE = /^\s*(?:[-•·>]|\d+[.、)）]|（[一二三四五六七八九十\d]+）|\([一二三四五六七八九十\d]+\))/;
-      function parseOutlineToTree(text) {
-        const root = { id: uid(), text: '知识框架', children: [] };
-        let l1 = root, l2 = null;
-        for (const raw of text.split('\n')) {
-          const line = raw.trim(); if (!line) continue;
-          const indent = (raw.match(/^[\s\t]+/) || [''])[0].length;
-          if (indent > 0) { const node = mmNode(line.replace(/^[-•·*]\s*/, '')); (l2 || l1).children.push(node); l2 = node; continue; }
-          if (L1_RE.test(line)) { l1 = mmNode(line.replace(/[：:]\s*$/, '')); root.children.push(l1); l2 = null; }
-          else if (L2_RE.test(line)) { l2 = mmNode(line.replace(/^[-•··*]\s*/, '')); l1.children.push(l2); }
-          else (l2 || l1).children.push(mmNode(line));
-        }
-        return root;
-      }
-      function generateLocalMap(text) {
-        const trimmed = text.trim();
-        if (trimmed.includes('\n')) return parseOutlineToTree(trimmed);
-        const topic = trimmed.length > 24 ? trimmed.slice(0, 24) : trimmed;
-        const kw = topic.toLowerCase(); let branches = null;
-        if (kw.includes('英语') || kw.includes('四级') || kw.includes('六级') || kw.includes('雅思') || kw.includes('托福') || kw.includes('考研')) branches = ['核心词汇','听力理解','阅读理解','写作与翻译','真题复盘'];
-        else if (kw.includes('数学') || kw.includes('高数') || kw.includes('线性代数') || kw.includes('概率') || kw.includes('统计')) branches = ['基础概念','公式与定理','典型例题','错题本','考试策略'];
-        else if (kw.includes('编程') || kw.includes('前端') || kw.includes('后端') || kw.includes('java') || kw.includes('python') || kw.includes('javascript') || kw.includes('计算机') || kw.includes('c++')) branches = ['语言基础','数据结构与算法','项目实战','常见面试题','持续练习'];
-        else if (kw.includes('历史')) branches = ['时间线梳理','重要人物','事件因果','答题角度','资料整理'];
-        else if (kw.includes('生物')) branches = ['核心概念','结构与功能','实验与图表','易错点','复习计划'];
-        else if (kw.includes('物理') || kw.includes('化学')) branches = ['基本概念','公式定律','典型题型','实验探究','错题复盘'];
-        else if (kw.includes('证书') || kw.includes('备考') || kw.includes('考试')) branches = ['考试信息','知识大纲','学习计划','真题练习','冲刺复盘'];
-        if (branches) return { id: uid(), text: topic, children: branches.map((b) => mmNode(b, [mmNode('要点记录'), mmNode('注意事项')])) };
-        return { id: uid(), text: topic, children: [
-          mmNode('核心概念', [mmNode('定义 / 要点'), mmNode('关键词')]),
-          mmNode('知识结构', [mmNode('原理 / 机制'), mmNode('分类 / 步骤')]),
-          mmNode('常见考点', [mmNode('高频题型'), mmNode('易错点')]),
-          mmNode('学习方法', [mmNode('预习 / 复习'), mmNode('错题复盘')]),
-          mmNode('参考资料', [mmNode('教材 / 笔记'), mmNode('题库 / 视频')])
-        ] };
-      }
-      function parseAiResponse(raw, fallbackText) {
-        try { const data = JSON.parse(raw); if (data && data.root && typeof data.root.text === 'string') return data.root; } catch {}
-        return generateLocalMap(raw && raw.trim() ? raw : fallbackText);
-      }
-      function mapToMarkdown(map) {
-        let out = `# ${map.title || '未命名'}\n\n`;
-        (function walk(node, path) {
-          if (!path.length) out += `# ${node.text}\n\n`;
-          else out += `${'  '.repeat(path.length - 1)}${path.join('.')}. ${node.text}\n`;
-          node.children.forEach((c, i) => walk(c, [...path, i + 1]));
-        })(map.root, []);
-        return out;
-      }
-      function generateReviewMap() {
-        if (!tasks.length) { alert('还没有学习任务，先到「学习任务」里添加几条吧。'); return; }
-        const now = new Date();
-        const todayKey = dateKey(now);
-        const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
-        const weekKeys = new Set(); for (let i=0;i<7;i++){ const d = new Date(weekStart); d.setDate(weekStart.getDate()+i); weekKeys.add(dateKey(d)); }
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        const monthKeys = new Set(); const dim = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate(); for (let i=0;i<dim;i++){ const d = new Date(monthStart); d.setDate(monthStart.getDate()+i); monthKeys.add(dateKey(d)); }
-        const taskKey = (t) => t.dueDate ? dateKey(new Date(`${t.dueDate}T00:00:00`)) : null;
-        const uncompleted = tasks.filter((t) => !t.completed);
-        const mk = (label, arr) => mmNode(label, arr.map((t) => mmNode(t.text, t.tags.length ? t.tags.map((tag) => mmNode('# '+tag)) : [])));
-        const root = mmNode('学习任务复习');
-        root.children = [ mk('今日任务', uncompleted.filter((t) => taskKey(t) === todayKey)), mk('本周任务', uncompleted.filter((t) => taskKey(t) && weekKeys.has(taskKey(t)))), mk('本月任务', uncompleted.filter((t) => taskKey(t) && monthKeys.has(taskKey(t)))) ];
-        if (!root.children.some((c) => c.children.length)) root.children = [ mk('未完成任务', uncompleted.slice(0, 20)) ];
-        const nm = { id: uid(), title: '任务复习脑图', root }; mindmaps.push(nm); mmCurrentId = nm.id; mmSelectedId = root.id;
-        persistMindMaps(); renderMindMap(); setView('mindmap');
-      }
+      function parseOutlineToTree(text) { const root = { id: uid(), text: '知识框架', children: [] }; let l1 = root, l2 = null; for (const raw of text.split('\n')) { const line = raw.trim(); if (!line) continue; const indent = (raw.match(/^[\s\t]+/) || [''])[0].length; if (indent > 0) { const node = mmNode(line.replace(/^[-•·*]\s*/, '')); (l2 || l1).children.push(node); l2 = node; continue; } if (L1_RE.test(line)) { l1 = mmNode(line.replace(/[：:]\s*$/, '')); root.children.push(l1); l2 = null; } else if (L2_RE.test(line)) { l2 = mmNode(line.replace(/^[-•··*]\s*/, '')); l1.children.push(l2); } else (l2 || l1).children.push(mmNode(line)); } return root; }
+      function generateLocalMap(text) { const trimmed = text.trim(); if (trimmed.includes('\n')) return parseOutlineToTree(trimmed); const topic = trimmed.length > 24 ? trimmed.slice(0, 24) : trimmed; const kw = topic.toLowerCase(); let branches = null; if (kw.includes('英语') || kw.includes('四级') || kw.includes('六级') || kw.includes('雅思') || kw.includes('托福') || kw.includes('考研')) branches = ['核心词汇','听力理解','阅读理解','写作与翻译','真题复盘']; else if (kw.includes('数学') || kw.includes('高数') || kw.includes('线性代数') || kw.includes('概率') || kw.includes('统计')) branches = ['基础概念','公式与定理','典型例题','错题本','考试策略']; else if (kw.includes('编程') || kw.includes('前端') || kw.includes('后端') || kw.includes('java') || kw.includes('python') || kw.includes('javascript') || kw.includes('计算机') || kw.includes('c++')) branches = ['语言基础','数据结构与算法','项目实战','常见面试题','持续练习']; else if (kw.includes('历史')) branches = ['时间线梳理','重要人物','事件因果','答题角度','资料整理']; else if (kw.includes('生物')) branches = ['核心概念','结构与功能','实验与图表','易错点','复习计划']; else if (kw.includes('物理') || kw.includes('化学')) branches = ['基本概念','公式定律','典型题型','实验探究','错题复盘']; else if (kw.includes('证书') || kw.includes('备考') || kw.includes('考试')) branches = ['考试信息','知识大纲','学习计划','真题练习','冲刺复盘']; if (branches) return { id: uid(), text: topic, children: branches.map((b) => mmNode(b, [mmNode('要点记录'), mmNode('注意事项')])) }; return { id: uid(), text: topic, children: [ mmNode('核心概念', [mmNode('定义 / 要点'), mmNode('关键词')]), mmNode('知识结构', [mmNode('原理 / 机制'), mmNode('分类 / 步骤')]), mmNode('常见考点', [mmNode('高频题型'), mmNode('易错点')]), mmNode('学习方法', [mmNode('预习 / 复习'), mmNode('错题复盘')]), mmNode('参考资料', [mmNode('教材 / 笔记'), mmNode('题库 / 视频')]) ] }; }
+      function parseAiResponse(raw, fallbackText) { try { const data = JSON.parse(raw); if (data && data.root && typeof data.root.text === 'string') return data.root; } catch {} return generateLocalMap(raw && raw.trim() ? raw : fallbackText); }
+      function mapToMarkdown(map) { let out = `# ${map.title || '未命名'}\n\n`; (function walk(node, path) { if (!path.length) out += `# ${node.text}\n\n`; else out += `${'  '.repeat(path.length - 1)}${path.join('.')}. ${node.text}\n`; node.children.forEach((c, i) => walk(c, [...path, i + 1])); })(map.root, []); return out; }
+      function generateReviewMap() { if (!tasks.length) { alert('还没有学习任务，先到「学习任务」里添加几条吧。'); return; } const now = new Date(); const todayKey = dateKey(now); const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay()); const weekKeys = new Set(); for (let i=0;i<7;i++){ const d = new Date(weekStart); d.setDate(weekStart.getDate()+i); weekKeys.add(dateKey(d)); } const monthStart = new Date(now.getFullYear(), now.getMonth(), 1); const monthKeys = new Set(); const dim = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate(); for (let i=0;i<dim;i++){ const d = new Date(monthStart); d.setDate(monthStart.getDate()+i); monthKeys.add(dateKey(d)); } const taskKey = (t) => t.dueDate ? dateKey(new Date(`${t.dueDate}T00:00:00`)) : null; const uncompleted = tasks.filter((t) => !t.completed); const mk = (label, arr) => mmNode(label, arr.map((t) => mmNode(t.text, t.tags.length ? t.tags.map((tag) => mmNode('# '+tag)) : []))); const root = mmNode('学习任务复习'); root.children = [ mk('今日任务', uncompleted.filter((t) => taskKey(t) === todayKey)), mk('本周任务', uncompleted.filter((t) => taskKey(t) && weekKeys.has(taskKey(t)))), mk('本月任务', uncompleted.filter((t) => taskKey(t) && monthKeys.has(taskKey(t)))) ]; if (!root.children.some((c) => c.children.length)) root.children = [ mk('未完成任务', uncompleted.slice(0, 20)) ]; const nm = { id: uid(), title: '任务复习脑图', root }; mindmaps.push(nm); mmCurrentId = nm.id; mmSelectedId = root.id; persistMindMaps(); renderMindMap(); setView('mindmap'); }
       function formatDualTime(ts) { const d = new Date(ts); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
-      function renderDual() {
-        try {
-          const list = $('dual-list'); if (!list) return;
-          const sorted = [...dual.posts].sort((a, b) => b.ts - a.ts);
-          list.innerHTML = sorted.map((p) => `<article class="glass lift dual-card dual-${p.author}" data-dual-id="${p.id}"><div class="dual-head"><span class="dual-author">${p.author === 'A' ? '你' : '同伴'}</span><span class="dual-time">${formatDualTime(p.ts)}</span><span class="dual-actions"><button class="mini-btn dual-edit" type="button" title="编辑">✎</button><button class="mini-btn dual-delete" type="button" title="删除">×</button></span></div><div class="dual-body">${p.sticker ? `<span class="dual-emoji">${escapeHtml(p.sticker)}</span>` : ''}${p.mood ? `<span class="dual-emoji">${escapeHtml(p.mood)}</span>` : ''}<p class="dual-text">${escapeHtml(p.text || '')}</p></div>${p.image_url ? `<div class="dual-media"><img src="${escapeHtml(p.image_url)}" alt="日常照片" loading="lazy" /></div>` : ''}</article>`).join('');
-          if ($('dual-count')) $('dual-count').textContent = dual.posts.length;
-          if ($('dual-count-a')) $('dual-count-a').textContent = dual.posts.filter((p) => p.author === 'A').length;
-          if ($('dual-count-b')) $('dual-count-b').textContent = dual.posts.filter((p) => p.author === 'B').length;
-          if ($('dual-today')) $('dual-today').textContent = dual.posts.filter((p) => dateKey(new Date(p.ts)) === dateKey(new Date())).length;
-          if ($('dual-empty')) $('dual-empty').classList.toggle('hidden', dual.posts.length > 0);
-          if ($('dual-author')) $('dual-author').value = dualAuthor;
-          if ($('dual-mood-options')) $('dual-mood-options').innerHTML = moods.map((m) => `<button type="button" class="mood-btn ${dualMoodSel === m ? 'selected' : ''}" data-mood="${m}" aria-label="${m}">${m}</button>`).join('');
-          if ($('dual-sticker-options')) $('dual-sticker-options').innerHTML = dualStickers.map((s) => `<button type="button" class="sticker-btn ${dualStickerSel === s ? 'selected' : ''}" data-sticker="${s}" aria-label="${s}">${s}</button>`).join('');
-        } catch (e) { console.warn('[恋学] renderDual 异常', e); }
-      }
+      function renderDual() { try { const list = $('dual-list'); if (!list) return; const sorted = [...dual.posts].sort((a, b) => b.ts - a.ts); list.innerHTML = sorted.map((p) => `<article class="glass lift dual-card dual-${p.author}" data-dual-id="${p.id}"><div class="dual-head"><span class="dual-author">${p.author === 'A' ? '你' : '同伴'}</span><span class="dual-time">${formatDualTime(p.ts)}</span><span class="dual-actions"><button class="mini-btn dual-edit" type="button" title="编辑">✎</button><button class="mini-btn dual-delete" type="button" title="删除">×</button></span></div><div class="dual-body">${p.sticker ? `<span class="dual-emoji">${escapeHtml(p.sticker)}</span>` : ''}${p.mood ? `<span class="dual-emoji">${escapeHtml(p.mood)}</span>` : ''}<p class="dual-text">${escapeHtml(p.text || '')}</p></div>${p.image_url ? `<div class="dual-media"><img src="${escapeHtml(p.image_url)}" alt="日常照片" loading="lazy" /></div>` : ''}</article>`).join(''); if ($('dual-count')) $('dual-count').textContent = dual.posts.length; if ($('dual-count-a')) $('dual-count-a').textContent = dual.posts.filter((p) => p.author === 'A').length; if ($('dual-count-b')) $('dual-count-b').textContent = dual.posts.filter((p) => p.author === 'B').length; if ($('dual-today')) $('dual-today').textContent = dual.posts.filter((p) => dateKey(new Date(p.ts)) === dateKey(new Date())).length; if ($('dual-empty')) $('dual-empty').classList.toggle('hidden', dual.posts.length > 0); if ($('dual-author')) $('dual-author').value = dualAuthor; if ($('dual-mood-options')) $('dual-mood-options').innerHTML = moods.map((m) => `<button type="button" class="mood-btn ${dualMoodSel === m ? 'selected' : ''}" data-mood="${m}" aria-label="${m}">${m}</button>`).join(''); if ($('dual-sticker-options')) $('dual-sticker-options').innerHTML = dualStickers.map((s) => `<button type="button" class="sticker-btn ${dualStickerSel === s ? 'selected' : ''}" data-sticker="${s}" aria-label="${s}">${s}</button>`).join(''); } catch (e) { console.warn('[恋学] renderDual 异常', e); } }
       function openDualForm(open = true) { const form = $('dual-form'); if (!form) return; form.classList.toggle('open', open); if (open) { editingDualId = null; if ($('dual-text')) $('dual-text').value = ''; dualMoodSel = ''; dualStickerSel = ''; dualImageFile = null; const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none'; const imgInp = $('dual-image-input'); if (imgInp) imgInp.value = ''; dualAuthor = dual.identity; renderDual(); const t = $('dual-text'); if (t) t.focus(); } }
-      async function dualPull() {
-        if (!dual.syncUrl) return;
-        try { const res = await fetch(dual.syncUrl, { cache:'no-store' }); if (!res.ok) return; const data = await res.json(); const remote = Array.isArray(data) ? data : (data && data.posts);
-          if (Array.isArray(remote) && remote.length) { const byId = new Map(dual.posts.map((p) => [p.id, p])); remote.forEach((p) => { if (p && p.id) byId.set(p.id, { ...p }); }); dual.posts = [...byId.values()]; persistDual(); renderDual(); }
-        } catch {}
-      }
+      async function dualPull() { if (!dual.syncUrl) return; try { const res = await fetch(dual.syncUrl, { cache:'no-store' }); if (!res.ok) return; const data = await res.json(); const remote = Array.isArray(data) ? data : (data && data.posts); if (Array.isArray(remote) && remote.length) { const byId = new Map(dual.posts.map((p) => [p.id, p])); remote.forEach((p) => { if (p && p.id) byId.set(p.id, { ...p }); }); dual.posts = [...byId.values()]; persistDual(); renderDual(); } } catch {} }
       async function dualPush() { if (!dual.syncUrl) return; try { await fetch(dual.syncUrl, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ posts: dual.posts }) }); } catch {} }
       function stopDualSync() { if (dualTimer) { clearInterval(dualTimer); dualTimer = null; } }
       function startDualSync() { stopDualSync(); if (dual.syncUrl) { dualPull(); dualTimer = setInterval(dualPull, 10000); } }
-      function renderMistakes() {
-        try {
-          const list = $('mistake-list'); if (!list) return;
-          const needle = mistakeSearch.trim().toLowerCase();
-          const visible = mistakes.filter((m) => (!needle || `${m.problem} ${m.subject} ${m.reason} ${m.answer}`.toLowerCase().includes(needle)) && (mistakeFilter === 'all' || (mistakeFilter === 'open' ? m.status === 'open' : m.status === 'learned')));
-          list.innerHTML = visible.map((m) => `<article class="glass lift item-card" data-mistake-id="${m.id}"><div class="item-head"><span class="pill">${escapeHtml(m.subject || '未分类')}</span><span class="pill ${m.status === 'learned' ? 'status-learned' : 'status-open'}">${m.status === 'learned' ? '已掌握' : '未掌握'}</span><span class="item-actions"><button class="mini-btn mistake-toggle" type="button" title="切换掌握状态">✓</button><button class="mini-btn mistake-edit" type="button" title="编辑">✎</button><button class="mini-btn mistake-delete" type="button" title="删除">×</button></span></div><p class="item-title">${escapeHtml(m.problem)}</p>${m.reason ? `<p class="item-sub">原因 · ${escapeHtml(m.reason)}</p>` : ''}${m.answer ? `<p class="item-sub">答案 · ${escapeHtml(m.answer)}</p>` : ''}<div class="item-meta"><span class="due">${formatDualTime(m.ts)}</span></div></article>`).join('');
-          const open = mistakes.filter((m) => m.status === 'open').length; const learned = mistakes.length - open;
-          if ($('mistake-total-stat')) $('mistake-total-stat').textContent = mistakes.length;
-          if ($('mistake-open-stat')) $('mistake-open-stat').textContent = open;
-          if ($('mistake-learned-stat')) $('mistake-learned-stat').textContent = learned;
-          if ($('mistake-today-stat')) $('mistake-today-stat').textContent = mistakes.filter((m) => dateKey(new Date(m.ts)) === dateKey(new Date())).length;
-          if ($('mistake-count')) $('mistake-count').textContent = `${open} 道未掌握${mistakes.length ? ` · 共 ${mistakes.length} 道` : ''}`;
-          if ($('mistake-empty')) $('mistake-empty').classList.toggle('hidden', visible.length > 0);
-          document.querySelectorAll('.filter-btn[data-mf]').forEach((button) => button.classList.toggle('active', button.dataset.mf === mistakeFilter));
-        } catch (e) { console.warn('[恋学] renderMistakes 异常', e); }
-      }
+      function renderMistakes() { try { const list = $('mistake-list'); if (!list) return; const needle = mistakeSearch.trim().toLowerCase(); const visible = mistakes.filter((m) => (!needle || `${m.problem} ${m.subject} ${m.reason} ${m.answer}`.toLowerCase().includes(needle)) && (mistakeFilter === 'all' || (mistakeFilter === 'open' ? m.status === 'open' : m.status === 'learned'))); list.innerHTML = visible.map((m) => `<article class="glass lift item-card" data-mistake-id="${m.id}"><div class="item-head"><span class="pill">${escapeHtml(m.subject || '未分类')}</span><span class="pill ${m.status === 'learned' ? 'status-learned' : 'status-open'}">${m.status === 'learned' ? '已掌握' : '未掌握'}</span><span class="item-actions"><button class="mini-btn mistake-toggle" type="button" title="切换掌握状态">✓</button><button class="mini-btn mistake-edit" type="button" title="编辑">✎</button><button class="mini-btn mistake-delete" type="button" title="删除">×</button></span></div><p class="item-title">${escapeHtml(m.problem)}</p>${m.reason ? `<p class="item-sub">原因 · ${escapeHtml(m.reason)}</p>` : ''}${m.answer ? `<p class="item-sub">答案 · ${escapeHtml(m.answer)}</p>` : ''}<div class="item-meta"><span class="due">${formatDualTime(m.ts)}</span></div></article>`).join(''); const open = mistakes.filter((m) => m.status === 'open').length; const learned = mistakes.length - open; if ($('mistake-total-stat')) $('mistake-total-stat').textContent = mistakes.length; if ($('mistake-open-stat')) $('mistake-open-stat').textContent = open; if ($('mistake-learned-stat')) $('mistake-learned-stat').textContent = learned; if ($('mistake-today-stat')) $('mistake-today-stat').textContent = mistakes.filter((m) => dateKey(new Date(m.ts)) === dateKey(new Date())).length; if ($('mistake-count')) $('mistake-count').textContent = `${open} 道未掌握${mistakes.length ? ` · 共 ${mistakes.length} 道` : ''}`; if ($('mistake-empty')) $('mistake-empty').classList.toggle('hidden', visible.length > 0); document.querySelectorAll('.filter-btn[data-mf]').forEach((button) => button.classList.toggle('active', button.dataset.mf === mistakeFilter)); } catch (e) { console.warn('[恋学] renderMistakes 异常', e); } }
       function openMistakeForm(open = true) { const form = $('mistake-form'); if (!form) return; form.classList.toggle('open', open); if (open) { editingMistakeId = null; if ($('mistake-problem-input')) $('mistake-problem-input').value = ''; if ($('mistake-answer-input')) $('mistake-answer-input').value = ''; if ($('mistake-subject-input')) $('mistake-subject-input').value = ''; if ($('mistake-reason-input')) $('mistake-reason-input').value = ''; if ($('mistake-status-input')) $('mistake-status-input').value = 'open'; const f = $('mistake-problem-input'); if (f) f.focus(); } }
-      function renderVocab() {
-        try {
-          const list = $('vocab-list'); if (!list) return;
-          const needle = vocabSearch.trim().toLowerCase();
-          const visible = vocab.filter((v) => (!needle || `${v.word} ${v.meaning} ${v.example}`.toLowerCase().includes(needle)) && (vocabFilter === 'all' || v.status === vocabFilter));
-          const statusMap = { new:'未学', learning:'学习中', mastered:'已掌握' }; const classMap = { new:'vocab-new', learning:'vocab-learning', mastered:'vocab-mastered' };
-          list.innerHTML = visible.map((v) => `<article class="glass lift item-card" data-vocab-id="${v.id}"><div class="item-head"><p class="vocab-word">${escapeHtml(v.word)}</p><span class="pill ${classMap[v.status]}">${statusMap[v.status]}</span><span class="item-actions"><button class="mini-btn vocab-cycle" type="button" title="切换掌握状态">⇄</button><button class="mini-btn vocab-edit" type="button" title="编辑">✎</button><button class="mini-btn vocab-delete" type="button" title="删除">×</button></span></div>${v.meaning ? `<p class="item-sub">${escapeHtml(v.meaning)}</p>` : ''}${v.example ? `<p class="item-sub">例句 · ${escapeHtml(v.example)}</p>` : ''}<div class="item-meta"><span class="due">${formatDualTime(v.ts)}</span></div></article>`).join('');
-          const learn = vocab.filter((v) => v.status === 'learning').length; const mastered = vocab.filter((v) => v.status === 'mastered').length; const fresh = vocab.length - learn - mastered;
-          if ($('vocab-total-stat')) $('vocab-total-stat').textContent = vocab.length;
-          if ($('vocab-new-stat')) $('vocab-new-stat').textContent = fresh;
-          if ($('vocab-learning-stat')) $('vocab-learning-stat').textContent = learn;
-          if ($('vocab-mastered-stat')) $('vocab-mastered-stat').textContent = mastered;
-          if ($('vocab-count')) $('vocab-count').textContent = `${fresh} 个未学${vocab.length ? ` · 共 ${vocab.length} 个` : ''}`;
-          if ($('vocab-empty')) $('vocab-empty').classList.toggle('hidden', visible.length > 0);
-          document.querySelectorAll('.filter-btn[data-vf]').forEach((button) => button.classList.toggle('active', button.dataset.vf === vocabFilter));
-        } catch (e) { console.warn('[恋学] renderVocab 异常', e); }
-      }
+      function renderVocab() { try { const list = $('vocab-list'); if (!list) return; const needle = vocabSearch.trim().toLowerCase(); const visible = vocab.filter((v) => (!needle || `${v.word} ${v.meaning} ${v.example}`.toLowerCase().includes(needle)) && (vocabFilter === 'all' || v.status === vocabFilter)); const statusMap = { new:'未学', learning:'学习中', mastered:'已掌握' }; const classMap = { new:'vocab-new', learning:'vocab-learning', mastered:'vocab-mastered' }; list.innerHTML = visible.map((v) => `<article class="glass lift item-card" data-vocab-id="${v.id}"><div class="item-head"><p class="vocab-word">${escapeHtml(v.word)}</p><span class="pill ${classMap[v.status]}">${statusMap[v.status]}</span><span class="item-actions"><button class="mini-btn vocab-cycle" type="button" title="切换掌握状态">⇄</button><button class="mini-btn vocab-edit" type="button" title="编辑">✎</button><button class="mini-btn vocab-delete" type="button" title="删除">×</button></span></div>${v.meaning ? `<p class="item-sub">${escapeHtml(v.meaning)}</p>` : ''}${v.example ? `<p class="item-sub">例句 · ${escapeHtml(v.example)}</p>` : ''}<div class="item-meta"><span class="due">${formatDualTime(v.ts)}</span></div></article>`).join(''); const learn = vocab.filter((v) => v.status === 'learning').length; const mastered = vocab.filter((v) => v.status === 'mastered').length; const fresh = vocab.length - learn - mastered; if ($('vocab-total-stat')) $('vocab-total-stat').textContent = vocab.length; if ($('vocab-new-stat')) $('vocab-new-stat').textContent = fresh; if ($('vocab-learning-stat')) $('vocab-learning-stat').textContent = learn; if ($('vocab-mastered-stat')) $('vocab-mastered-stat').textContent = mastered; if ($('vocab-count')) $('vocab-count').textContent = `${fresh} 个未学${vocab.length ? ` · 共 ${vocab.length} 个` : ''}`; if ($('vocab-empty')) $('vocab-empty').classList.toggle('hidden', visible.length > 0); document.querySelectorAll('.filter-btn[data-vf]').forEach((button) => button.classList.toggle('active', button.dataset.vf === vocabFilter)); } catch (e) { console.warn('[恋学] renderVocab 异常', e); } }
       function openVocabForm(open = true) { const form = $('vocab-form'); if (!form) return; form.classList.toggle('open', open); if (open) { editingVocabId = null; if ($('vocab-word-input')) $('vocab-word-input').value = ''; if ($('vocab-meaning-input')) $('vocab-meaning-input').value = ''; if ($('vocab-example-input')) $('vocab-example-input').value = ''; if ($('vocab-status-input')) $('vocab-status-input').value = 'new'; const f = $('vocab-word-input'); if (f) f.focus(); } }
       const vocabFlow = ['new', 'learning', 'mastered', 'new'];
       function setView(view) { activeView = view; ['home','tasks','mindmap','mistakes','vocab','dual','certs','countdowns','pomodoro'].forEach((name) => { const section = $(`${name}-view`); if (!section) return; const show = view === name; section.classList.toggle('hidden', !show); if (show) { section.classList.remove('view-enter'); requestAnimationFrame(() => section.classList.add('view-enter')); } }); document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.view === view)); if (view === 'countdowns') renderCountdowns(); if (view === 'pomodoro') renderPomodoro(); if (view === 'mindmap') renderMindMap(); if (view === 'dual') renderDual(); if (view === 'mistakes') renderMistakes(); if (view === 'vocab') renderVocab(); renderHomeSummary(); }
@@ -1295,12 +841,7 @@
       function scrollToModules() { if (modulesViewport && window.scrollY < window.innerHeight * 0.6) modulesViewport.scrollIntoView({ behavior: 'smooth' }); }
       on('scroll-down-btn','click', () => { revealModules(); if (modulesViewport) modulesViewport.scrollIntoView({ behavior: 'smooth' }); });
       on('hero-start','click', () => { setView('tasks'); revealModules(); scrollToModules(); });
-      if ('IntersectionObserver' in window && modulesViewport) {
-        var io = new IntersectionObserver(function (entries) { if (entries[0].isIntersecting) { revealModules(); io.disconnect(); } }, { threshold: 0.05 });
-        io.observe(modulesViewport);
-      } else if (modulesViewport) {
-        window.addEventListener('scroll', function onScroll() { if (window.scrollY > window.innerHeight * 0.3) { revealModules(); window.removeEventListener('scroll', onScroll); } }, { passive: true });
-      }
+      if ('IntersectionObserver' in window && modulesViewport) { var io = new IntersectionObserver(function (entries) { if (entries[0].isIntersecting) { revealModules(); io.disconnect(); } }, { threshold: 0.05 }); io.observe(modulesViewport); } else if (modulesViewport) { window.addEventListener('scroll', function onScroll() { if (window.scrollY > window.innerHeight * 0.3) { revealModules(); window.removeEventListener('scroll', onScroll); } }, { passive: true }); }
 
       /* ---- 任务 ---- */
       on('task-form','submit', (event) => { event.preventDefault(); const title = $('task-title-input') ? $('task-title-input').value.trim() : ''; if (!title) return; tasks.unshift(normalizeTask({ id:uid(), text:title, notes:$('task-notes-input') ? $('task-notes-input').value.trim() : '', priority:$('task-priority-input') ? $('task-priority-input').value : 'medium', dueDate:$('task-due-input') ? $('task-due-input').value : '', tags:$('task-tags-input') ? $('task-tags-input').value.split(',').map((x) => x.trim()).filter(Boolean) : [], completed:false })); persist(); renderTasks(); if (event.target) event.target.reset(); if ($('task-priority-input')) $('task-priority-input').value = 'medium'; openTaskForm(false); });
@@ -1354,53 +895,10 @@
       /* ---- 双人空间 ---- */
       on('dual-new-post','click', () => { const f = $('dual-form'); openDualForm(!(f && f.classList.contains('open'))); });
       on('dual-cancel','click', () => { const form = $('dual-form'); if (form) form.classList.remove('open'); });
-      on('dual-image-input','change', (event) => {
-        const file = event.target.files && event.target.files[0];
-        dualImageFile = file || null;
-        const prev = $('dual-image-preview'); const img = $('dual-image-preview-img');
-        if (!file) { if (prev) prev.style.display = 'none'; return; }
-        if (img) { const reader = new FileReader(); reader.onload = (e) => { img.src = e.target.result; if (prev) prev.style.display = 'block'; }; reader.readAsDataURL(file); }
-      });
-      on('dual-image-clear','click', () => {
-        dualImageFile = null;
-        const inp = $('dual-image-input'); if (inp) inp.value = '';
-        const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none';
-      });
-      on('dual-form','submit', async (event) => {
-        event.preventDefault();
-        const text = $('dual-text') ? $('dual-text').value.trim() : '';
-        if (!text && !dualMoodSel && !dualStickerSel && !dualImageFile) return;
-        const author = $('dual-author') ? $('dual-author').value : 'A';
-        dual.identity = author;
-        const submitBtn = event.target.querySelector('button[type="submit"]');
-        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '发送中…'; }
-        let image_url = '';
-        if (dualImageFile) image_url = await uploadPostImage(dualImageFile);
-        const post = { id: uid(), author, text, mood: dualMoodSel, sticker: dualStickerSel, image_url, ts: Date.now() };
-        const ok = await publishDualPost(post);
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '发送'; }
-        if (ok) { const sb = ensureSupabase(); if (sb) sb.from('dual_posts').select('id').eq('text', post.text).limit(1).then(() => {}).catch(() => {}); }
-        persistDual(); renderDual();
-        const form = $('dual-form'); if (form) form.classList.remove('open');
-        const t = $('dual-text'); if (t) t.value = '';
-        const inp = $('dual-image-input'); if (inp) inp.value = '';
-        const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none';
-        dualImageFile = null; dualMoodSel = ''; dualStickerSel = '';
-      });
-      on('dual-list','click', (event) => {
-        const card = event.target.closest('.dual-card'); if (!card) return;
-        const post = dual.posts.find((p) => p.id === card.dataset.dualId); if (!post) return;
-        if (event.target.closest('.dual-delete')) {
-          dual.posts = dual.posts.filter((p) => p.id !== post.id); persistDual(); renderDual();
-        }
-        if (event.target.closest('.dual-edit')) {
-          editingDualId = post.id; dualAuthor = post.author; dualMoodSel = post.mood; dualStickerSel = post.sticker;
-          if ($('dual-author')) $('dual-author').value = post.author;
-          if ($('dual-text')) $('dual-text').value = post.text;
-          const form = $('dual-form'); if (form) form.classList.add('open');
-          renderDual(); const t = $('dual-text'); if (t) t.focus();
-        }
-      });
+      on('dual-image-input','change', async (event) => { const file = event.target.files && event.target.files[0]; const prev = $('dual-image-preview'); const img = $('dual-image-preview-img'); if (!file) { dualImageFile = null; if (prev) prev.style.display = 'none'; return; } dualImageFile = await compressImage(file); if (img) { const reader = new FileReader(); reader.onload = (e) => { img.src = e.target.result; if (prev) prev.style.display = 'block'; }; reader.readAsDataURL(dualImageFile); } });
+      on('dual-image-clear','click', () => { dualImageFile = null; const inp = $('dual-image-input'); if (inp) inp.value = ''; const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none'; });
+      on('dual-form','submit', async (event) => { event.preventDefault(); const text = $('dual-text') ? $('dual-text').value.trim() : ''; if (!text && !dualMoodSel && !dualStickerSel && !dualImageFile) return; const author = $('dual-author') ? $('dual-author').value : 'A'; dual.identity = author; const submitBtn = event.target.querySelector('button[type="submit"]'); if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '发送中…'; } let image_url = ''; if (dualImageFile) image_url = await uploadPostImage(dualImageFile); const post = { id: uid(), author, text, mood: dualMoodSel, sticker: dualStickerSel, image_url, ts: Date.now() }; await publishDualPost(post); if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '发送'; } const form = $('dual-form'); if (form) form.classList.remove('open'); const t = $('dual-text'); if (t) t.value = ''; const inp = $('dual-image-input'); if (inp) inp.value = ''; const prev = $('dual-image-preview'); if (prev) prev.style.display = 'none'; dualImageFile = null; dualMoodSel = ''; dualStickerSel = ''; });
+      on('dual-list','click', (event) => { const card = event.target.closest('.dual-card'); if (!card) return; const post = dual.posts.find((p) => p.id === card.dataset.dualId); if (!post) return; if (event.target.closest('.dual-delete')) { dual.posts = dual.posts.filter((p) => p.id !== post.id); persistDual(); renderDual(); } if (event.target.closest('.dual-edit')) { editingDualId = post.id; dualAuthor = post.author; dualMoodSel = post.mood; dualStickerSel = post.sticker; if ($('dual-author')) $('dual-author').value = post.author; if ($('dual-text')) $('dual-text').value = post.text; const form = $('dual-form'); if (form) form.classList.add('open'); renderDual(); const t = $('dual-text'); if (t) t.focus(); } });
       on('dual-mood-options','click', (event) => { const btn = event.target.closest('.mood-btn'); if (!btn) return; dualMoodSel = dualMoodSel === btn.dataset.mood ? '' : btn.dataset.mood; renderDual(); });
       on('dual-sticker-options','click', (event) => { const btn = event.target.closest('.sticker-btn'); if (!btn) return; dualStickerSel = dualStickerSel === btn.dataset.sticker ? '' : btn.dataset.sticker; renderDual(); });
       on('dual-sync-url-toggle','click', () => { const panel = $('dual-sync-panel'); const input = $('dual-sync-url'); if (panel) panel.classList.toggle('hidden'); if (input) input.value = dual.syncUrl; });
@@ -1441,10 +939,7 @@
       on('auth-form','submit', handleAuthSubmit);
       on('auth-modal','click', (event) => { if (event.target.id === 'auth-modal') closeAuth(); });
       const authArea = $('auth-area');
-      if (authArea) authArea.addEventListener('click', (event) => {
-        if (event.target.closest('#auth-open')) openAuth();
-        if (event.target.closest('#auth-logout')) handleLogout();
-      });
+      if (authArea) authArea.addEventListener('click', (event) => { if (event.target.closest('#auth-open')) openAuth(); if (event.target.closest('#auth-logout')) handleLogout(); });
       /* ---- 背景设置面板 ---- */
       function openBgSettings() { const panel = $('bg-settings-panel'); if (!panel) return; panel.classList.remove('hidden'); if ($('fluid-intensity')) $('fluid-intensity').value = bgSettings.intensity; if ($('flow-speed')) $('flow-speed').value = bgSettings.speed; if ($('scanlines-toggle')) $('scanlines-toggle').checked = bgSettings.scan; if ($('simple-mode-toggle')) $('simple-mode-toggle').checked = bgSettings.simple; }
       function closeBgSettings() { const panel = $('bg-settings-panel'); if (panel) panel.classList.add('hidden'); }
@@ -1454,19 +949,16 @@
       on('flow-speed','input', (e) => { bgSettings.speed = Number(e.target.value); saveBgSettings(); });
       on('scanlines-toggle','change', (e) => { bgSettings.scan = e.target.checked; saveBgSettings(); });
       on('simple-mode-toggle','change', (e) => { bgSettings.simple = e.target.checked; saveBgSettings(); });
-      /* ---- 初始化（每个功能独立，单个失败不影响其他功能） ---- */
+      /* ---- 初始化 ---- */
       initAuth();
       initDualRealtime();
       nextHeroIdiom(); dateLabel(); nextQuote(); fitQuoteText();
       window.addEventListener('resize', fitQuoteText);
-      [renderTasks, renderCerts, renderCalendar, renderCountdowns, renderPomodoro, renderMindMap, renderDual, renderMistakes, renderVocab, renderHomeSummary].forEach((fn) => {
-        try { fn(); } catch (e) { console.error('[恋学] 初始化渲染失败：', fn.name, e); }
-      });
+      [renderTasks, renderCerts, renderCalendar, renderCountdowns, renderPomodoro, renderMindMap, renderDual, renderMistakes, renderVocab, renderHomeSummary].forEach((fn) => { try { fn(); } catch (e) { console.error('[恋学] 初始化渲染失败：', fn.name, e); } });
       setView('home'); startDualSync(); setInterval(renderCountdowns,1000);
     })();
   </script>
   <script>
-    /* Service Worker：请在 HTTPS 或 localhost 下使用；配合同目录 v6 版 service-worker.js */
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
       window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js', { scope:'./' }).catch(() => {}));
     }
